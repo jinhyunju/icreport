@@ -1,0 +1,147 @@
+
+```{r, echo = FALSE}
+#---
+#title: "Differentially Expressed Genes/Transcripts in Non-smokers vs Smokers vs COPD-Smokers"
+#author: "Jinhyun Ju"
+#date: "07/03/2014"
+#output: html_document
+#---
+```
+
+## PCA Result Plotting
+
+
+```{r global_options, include=FALSE}
+# setting global options 
+figure.outpath <- paste(output.path,data.set,"_figures/",sep="")
+opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
+```
+
+
+```{r Read_Function_Data, echo = FALSE, include = FALSE}
+########################################################################################################
+###########################     Declaring Functions for the analysis     ###############################
+########################################################################################################
+
+#source("./ICA_realdata_function.R")
+
+
+```
+
+
+### PCA Mclust Plots
+
+```{r Individual_PC_plots, echo = FALSE,comment=NA,warning=FALSE, fig.width = 10,fig.height = 5}
+# Plotting for NH.ica.45
+
+
+# start for 
+for( i in 1:dim(input.ica$PCA$x)[2]){
+
+  mclust.plots <- list()
+ 
+  mclust.obj <- suppressMessages(Mclust(input.ica$PCA$x[,i], modelNames = "V"))
+  mclust.bic.df <- data.frame("V" = mclust.obj$BIC, "N.clust" = attr(mclust.obj$BIC,"G"))
+  mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,"data" = mclust.obj$data )
+
+  
+
+ # Plot IC loading with peaks labeled in red
+  mclust.plots[[1]] <- plot.signature(input.ica$PCA$rotation[,i],paste(data.set,"_PC#_",i,sep =""))
+  
+  mclust.plots[[4]] <- plot.signature.hist(input.ica$PCA$rotation[,i],"Gene Weight Histogram")
+ 
+ # create a data frame for plotting
+ if(!is.null(colnames(input.ica$PCA$x)) & !is.null(info.df)){
+  # create a data frame for plotting
+  coeff.plot.df <- data.frame( as.data.frame( info.df[rownames(input.ica$PCA$x),]) ,
+                               "IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]) )
+
+  # Setting the colnames to covariate names
+  colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[rownames(input.ica$x),]))[2]] <- colnames(info.df) 
+  
+ } else if (is.null(info.df)) {
+  # If there is no sample information available
+  coeff.plot.df <- data.frame("IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]))
+
+ } else {
+   coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]))
+
+ }
+  
+ # If IC is correlated to a covariate color the pot accordingly
+    if(i %in% unique(input.ica$PCA$cov.corr.idx$Signal.idx)){
+      color.by <- names(which.min(input.ica$PCA$cov.pval.mx[i, as.character(input.ica$PCA$cov.corr.idx$Covariate.Name[which(input.ica$PCA$cov.corr.idx$Signal.idx == i)])]))
+     mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,plot.title = paste("Covariate = ",color.by,sep="")) + theme(legend.position ="none")
+     
+     mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
+       geom_boxplot() + xlab("Covariate")+
+       ylab("IC coefficient") +  theme(axis.ticks = element_blank(), axis.text.x = element_blank())+ylab("")
+       #+ theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+    } else if(mclust.obj$G != 1){
+    # If IC is not correlated to covariate color it using the clustering information obtained from mclust
+
+    coeff.plot.df$mclust <- factor(mclust.obj$classification)
+    mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
+      geom_point(size = 3, pch = 20) + 
+      xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") + 
+      scale_color_brewer(palette = "Set1") 
+    
+    mclust.plots[[3]] <- ggplot(coeff.plot.df, aes(x = mclust, y = IC, color = mclust)) + 
+      geom_boxplot() + xlab("Covariate")+ylab("IC coefficient") +  
+      theme(axis.ticks = element_blank(), axis.text.x = element_blank())+ylab("")
+
+    } else {
+    coeff.plot.df$mclust <- factor(rep(1,dim(coeff.plot.df)[1]))
+    mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
+      geom_point(size = 3, pch = 20) + 
+      xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") + 
+       scale_color_brewer(palette = "Set1") + theme(legend.position = "none")
+    
+    mclust.plots[[3]] <-  ggplot(coeff.plot.df, aes(x = IC)) + xlab("IC Coefficients") + ylab("")+
+      geom_histogram(aes(y = ..density..)) + geom_density()
+  }
+  
+
+  # Plotting BIC values for varying number of clusters
+#  mclust.plots[[3]] <- ggplot(mclust.bic.df, aes(x= N.clust, y = V)) + geom_point(size = 3, pch = 20) + geom_line(size = 1, color = "navy") + xlab("Number of Clusters") + ylab("BIC") + 
+#  labs(title = paste(mclust.obj$G," Cluster(s)",sep="")) 
+
+# Uncertainty plot
+#  mclust.plots[[4]] <- ggplot(mclust.cer.df, aes(x= uncertainty, y = data)) + geom_point(size = 3, pch = 20) +
+#   geom_line(size = 1, color = "navy") + xlab("Uncertainty") + ylab("IC coefficient") + 
+#   labs(title = "Uncertainty") + xlim(0,0.5)
+ 
+
+  layout <- matrix(c(1,1,4,4,
+                     2,2,3,3), byrow = T,ncol = 4)
+
+  
+  for( k in 1:length(mclust.plots)){
+    mclust.plots[[k]] <- mclust.plots[[k]] +theme(axis.text = element_text(size=12), 
+        axis.title=element_text(size=14,face="bold"), 
+        title = element_text(size=16,face="bold"),
+        legend.title = element_text(size=10, face="bold"),
+#        legend.key.size = unit (0.5,"cm"), 
+        legend.text = element_text(size = 8),
+        legend.key = element_rect(fill = NA,color = "white"),
+        panel.grid.major = element_line(colour = "grey80", linetype="dashed"),
+        panel.background = element_rect(fill = NA,color = "grey80")) 
+    
+  }
+
+  
+  cat("-------------------------------------------------------------------------------------------------------------------","\n")
+  if (i %in% unique(input.ica$PCA$cov.corr.idx$Signal.idx)){
+    cat("PC # ",i," Correlation with covariate ", color.by," P-value = ",input.ica$PCA$cov.pval.mx[i,color.by],"\n")    
+  } else {
+    cat("PC # ",i," No correlation with covariates ","\n")
+  }
+ cat("-------------------------------------------------------------------------------------------------------------------","\n")
+
+  multiplot(plotlist = mclust.plots, layout = layout)
+  
+}
+
+```
+

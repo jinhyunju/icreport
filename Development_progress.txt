@@ -1,0 +1,40 @@
+# Project VICE log
+
+Author: Jin Hyun Ju
+Contact: jinhyun.ju@gmail.com
+
+Project initiated on: 3.Dec.2014
+
+#########################################
+Day1)
+
+Information based on Hadley Wickham's R package building tutorial.
+http://r-pkgs.had.co.nz/intro.html
+
+
+### [1] installed necessary packages
+
+install.packages(c("devtools", "roxygen2","testthat","knitr"))
+
+devtools::install_github("hadley/devtools")
+# to get up-to-date developments directly from github
+
+# check installation of dependencies
+
+library(devtools)
+has_devel()
+
+### [2] Created directory and initiated package "vicetools"
+
+# Visualizing Independent Components in Expression data (VICE) tools
+
+devtools::create("~/Dropbox/vicetools")
+
+# Generated individual function files with roxy descriptions in the /R folder
+
+# Looking up functions -> F2 
+
+### [3] Keyboard shrotcuts
+
+# Load all > devtools::load_all() or Cmd + Shift + L
+# Build and reload > Cmd + Shift + B (only in rstudio)
