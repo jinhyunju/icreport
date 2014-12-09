@@ -3,12 +3,14 @@ Title: Tools for creating a visual summary of matrix decomposition results.
 Version: 0.1
 Authors@R: "Jinhyun Ju <jinhyun.ju@gmail.com> [aut, cre]"
 Description: What the package does (one paragraph)
-Depends:
+Depends: 
     R (>= 3.1.0)
 License: What license is it under?
 LazyData: true
-Imports:
+Imports: 
     fastICA,
     ggplot2,
     mclust,
     parallel
+Suggests: knitr
+VignetteBuilder: knitr
