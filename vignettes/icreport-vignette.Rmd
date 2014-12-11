@@ -9,11 +9,9 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+The `icreport` package provides functions that perform independent component analysis on a given data set and can subsequently generate a compact report. 
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+Gene expression analyses with RNA sequencing or microarray produce extremely high dimensional datasets containing approximately 20,000 or more features per sample. Inspecting such large datasets is no easy task. Heatmaps or Principal Component Analysis (PCA) are commonly used for visual representation of the data to reveal any hidden structures. Independent component analysis (ICA) is a method that can give us valuable insight about the hidden structure of the data. 
 
 ## Vignette Info
 

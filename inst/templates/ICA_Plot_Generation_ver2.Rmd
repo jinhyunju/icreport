@@ -105,8 +105,8 @@ for( p in 1:dim(ica.result$A)[1]){
         # color the graph by the covariate with the most significant association
         color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$Signal.idx == i)])]))
        mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
-                                                plot.title = paste("Covariate = ",color.by,sep=""))
-                            + theme(legend.position ="none")
+                                                plot.title = paste("Covariate = ",color.by,sep="")) + 
+                                                theme(legend.position ="none")
        
        # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
        # Need to figure out which plot might be most effective
