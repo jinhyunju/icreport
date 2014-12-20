@@ -1,17 +1,18 @@
 #' Automated ICA analysis with Report
 #'
-#' Performing ICA + Report Generation
+#' Performing ICA on a dataset and create a list object with results.
 #'
-#' @param phenotype.mx Phenotype matrix   \code{phenotype.mx}
-#' @param info.df dataframe that holds covariates \code{info.df}
-#' @param check.covars
-#' @param k.est
-#' @param scale.pheno
-#' @param n.runs
-#' @param max.iter
-#' @param n.cores
-#' @param cor.threshold
-#' @return output HTML report that
+#' @param phenotype.mx Phenotype matrix with diemnsions g x N   \code{phenotype.mx}
+#' @param info.df Dataframe that holds sample covariates (ex. population, gender, age, etc...) \code{info.df}
+#' @param check.covars Column names of info.df which hold the covariates
+#' that should be used for association testing with IC coefficients \code{check.covars}
+#' @param k.est Number of components to be estimated or method to estimate it. \code{k.est}
+#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}
+#' @param n.runs Number of runs for estimating k. Default value is set to 5. \code{n.runs}
+#' @param max.iter Maximum iterations for estimating k for each run. Default value is set to 10. \code{max.iter}
+#' @param n.cores Number of cores to be used for estimating k. Default is set to 1. \code{n.cores}
+#' @param cor.threshold Threshold for significant correlation calling. Default is set to 0.05 \code{cor.threshold}
+#' @return List with the following entries.
 #' @keywords keywords
 #'
 #' @export
@@ -43,15 +44,20 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
     cat("Estimating ",k.est, " Independent Componenets \n")
 
 
-    ica.result <- fastICA::fastICA(phenotype.mx, k.est,
-                          alg.typ = "parallel",method = "C",
-                          fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-                          alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                          maxit=500,tol = 0.0001, verbose = FALSE)
+#    ica.result <- fastICA::fastICA(phenotype.mx, k.est,
+#                          alg.typ = "parallel",method = "C",
+#                          fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
+#                          alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+#                          maxit=500,tol = 0.0001, verbose = FALSE)
+
+    ica.result <- fastICA_gene_expr(X = phenotype.mx,n.comp = k.est)
 
     rownames(ica.result$S) <- rownames(phenotype.mx)                   # Setting appropriate names for signals and mixing matrix
     colnames(ica.result$A) <- colnames(phenotype.mx)
     rownames(ica.result$A) <- paste("IC",c(1:dim(ica.result$A)[1]),sep="")
+
+    # Attaching the sample info dataframe to the ica list
+    ica.result$info.df <- info.df
 
     if(!is.null(k.est.plot.df)){
         ica.result$k.plot.df <- k.est.plot.df
@@ -98,7 +104,6 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
         ica.result$cov.corr.idx <- NULL     # in case there are no apparent covariates
     }
 
-    # Attaching the sample info dataframe to the ica list
-    ica.result$info.df <- info.df
+
     return(ica.result)
 }

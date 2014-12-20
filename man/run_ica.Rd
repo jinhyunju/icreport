@@ -8,29 +8,30 @@ run_ica(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
   n.cores = 1, cor.threshold = 0.05, ...)
 }
 \arguments{
-\item{phenotype.mx}{Phenotype matrix   \code{phenotype.mx}}
+\item{phenotype.mx}{Phenotype matrix with diemnsions g x N   \code{phenotype.mx}}
 
-\item{info.df}{dataframe that holds covariates \code{info.df}}
+\item{info.df}{Dataframe that holds sample covariates (ex. population, gender, age, etc...) \code{info.df}}
 
-\item{check.covars}{}
+\item{check.covars}{Column names of info.df which hold the covariates
+that should be used for association testing with IC coefficients \code{check.covars}}
 
-\item{k.est}{}
+\item{k.est}{Number of components to be estimated or method to estimate it. \code{k.est}}
 
-\item{scale.pheno}{}
+\item{scale.pheno}{Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}}
 
-\item{n.runs}{}
+\item{n.runs}{Number of runs for estimating k. Default value is set to 5. \code{n.runs}}
 
-\item{max.iter}{}
+\item{max.iter}{Maximum iterations for estimating k for each run. Default value is set to 10. \code{max.iter}}
 
-\item{n.cores}{}
+\item{n.cores}{Number of cores to be used for estimating k. Default is set to 1. \code{n.cores}}
 
-\item{cor.threshold}{}
+\item{cor.threshold}{Threshold for significant correlation calling. Default is set to 0.05 \code{cor.threshold}}
 }
 \value{
-output HTML report that
+List with the following entries.
 }
 \description{
-Performing ICA + Report Generation
+Performing ICA on a dataset and create a list object with results.
 }
 \examples{
 R code here showing how your function works

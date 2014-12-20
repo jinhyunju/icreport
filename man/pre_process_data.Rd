@@ -12,12 +12,18 @@ pre_process_data(phenotype.mx, scale.pheno = TRUE)
 Pre-processed phenotype matrix
 }
 \description{
-The function takes in the phenotype matrix
-and removes any 0 variance entries. Also it mean centers the data.
-If scaling option is true it will scale all the rows to have unit standard deviation.
+The function takes in a g x N matrix, where g is the number of genes and N is the number of samples,
+and removes any 0 variance entries followed by mean centering.
+If scaling option is true it will scale all rows to have unit standard deviation.
 }
 \examples{
-R code here showing how your function works
+raw.data <- rbind(rnorm(100,2,3),rnorm(100,10,2))
+centered <- pre_process_data(raw.data, scale.pheno = FALSE)
+apply(centered, 1, mean)
+apply(centered, 1, sd)
+centered.scaled <- pre_process_data(raw.data, scale.pheno = TRUE)
+apply(centered.scaled, 1, mean)
+apply(centered.scaled, 1, sd)
 }
 \keyword{keywords}
 

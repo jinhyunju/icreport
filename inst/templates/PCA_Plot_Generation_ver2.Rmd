@@ -1,9 +1,9 @@
 
 ```{r, echo = FALSE}
 #---
-#title: "Differentially Expressed Genes/Transcripts in Non-smokers vs Smokers vs COPD-Smokers"
+#title: "PCA report"
 #author: "Jinhyun Ju"
-#date: "07/03/2014"
+#date: "12/19/2014"
 #output: html_document
 #---
 ```
@@ -36,42 +36,42 @@ opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALS
 
 
 # start for 
-for( i in 1:dim(input.ica$PCA$x)[2]){
+for( i in 1:dim(pca.result$x)[2]){
 
   mclust.plots <- list()
  
-  mclust.obj <- suppressMessages(Mclust(input.ica$PCA$x[,i], modelNames = "V"))
+  mclust.obj <- suppressMessages(Mclust(pca.result$x[,i], modelNames = "V"))
   mclust.bic.df <- data.frame("V" = mclust.obj$BIC, "N.clust" = attr(mclust.obj$BIC,"G"))
   mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,"data" = mclust.obj$data )
 
   
 
  # Plot IC loading with peaks labeled in red
-  mclust.plots[[1]] <- plot.signature(input.ica$PCA$rotation[,i],paste(data.set,"_PC#_",i,sep =""))
+  mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],paste(data.set,"_PC#_",i,sep =""))
   
-  mclust.plots[[4]] <- plot.signature.hist(input.ica$PCA$rotation[,i],"Gene Weight Histogram")
+  mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],"Gene Weight Histogram")
  
  # create a data frame for plotting
- if(!is.null(colnames(input.ica$PCA$x)) & !is.null(info.df)){
+ if(!is.null(colnames(pca.result$x)) & !is.null(info.df)){
   # create a data frame for plotting
-  coeff.plot.df <- data.frame( as.data.frame( info.df[rownames(input.ica$PCA$x),]) ,
-                               "IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]) )
+  coeff.plot.df <- data.frame( as.data.frame( info.df[rownames(pca.result$x),]) ,
+                               "IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]) )
 
   # Setting the colnames to covariate names
-  colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[rownames(input.ica$x),]))[2]] <- colnames(info.df) 
+  colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[rownames(pca.result$x),]))[2]] <- colnames(info.df) 
   
  } else if (is.null(info.df)) {
   # If there is no sample information available
-  coeff.plot.df <- data.frame("IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]))
+  coeff.plot.df <- data.frame("IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
 
  } else {
-   coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = input.ica$PCA$x[,i],"idx"=c(1:dim(input.ica$PCA$x)[1]))
+   coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
 
  }
   
  # If IC is correlated to a covariate color the pot accordingly
-    if(i %in% unique(input.ica$PCA$cov.corr.idx$Signal.idx)){
-      color.by <- names(which.min(input.ica$PCA$cov.pval.mx[i, as.character(input.ica$PCA$cov.corr.idx$Covariate.Name[which(input.ica$PCA$cov.corr.idx$Signal.idx == i)])]))
+    if(i %in% unique(pca.result$cov.corr.idx$Signal.idx)){
+      color.by <- names(which.min(pca.result$cov.pval.mx[i, as.character(pca.result$cov.corr.idx$Covariate.Name[which(pca.result$cov.corr.idx$Signal.idx == i)])]))
      mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,plot.title = paste("Covariate = ",color.by,sep="")) + theme(legend.position ="none")
      
      mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
@@ -132,8 +132,8 @@ for( i in 1:dim(input.ica$PCA$x)[2]){
 
   
   cat("-------------------------------------------------------------------------------------------------------------------","\n")
-  if (i %in% unique(input.ica$PCA$cov.corr.idx$Signal.idx)){
-    cat("PC # ",i," Correlation with covariate ", color.by," P-value = ",input.ica$PCA$cov.pval.mx[i,color.by],"\n")    
+  if (i %in% unique(pca.result$cov.corr.idx$Signal.idx)){
+    cat("PC # ",i," Correlation with covariate ", color.by," P-value = ",pca.result$cov.pval.mx[i,color.by],"\n")    
   } else {
     cat("PC # ",i," No correlation with covariates ","\n")
   }

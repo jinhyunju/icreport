@@ -1,17 +1,23 @@
 #' Pre-processing of the data
 #'
-#' The function takes in the phenotype matrix
-#' and removes any 0 variance entries. Also it mean centers the data.
-#' If scaling option is true it will scale all the rows to have unit standard deviation.
+#' The function takes in a g x N matrix, where g is the number of genes and N is the number of samples,
+#' and removes any 0 variance entries followed by mean centering.
+#' If scaling option is true it will scale all rows to have unit standard deviation.
 #'
 #' @param phenotype.mx Phenotype matrix with a dimension of g X N  \code{phenotype.mx}
 #' @return Pre-processed phenotype matrix
 #' @keywords keywords
 #'
-#' @export
 #'
 #' @examples
-#' R code here showing how your function works
+#' raw.data <- rbind(rnorm(100,2,3),rnorm(100,10,2))
+#' centered <- pre_process_data(raw.data, scale.pheno = FALSE)
+#' apply(centered, 1, mean)
+#' apply(centered, 1, sd)
+#' centered.scaled <- pre_process_data(raw.data, scale.pheno = TRUE)
+#' apply(centered.scaled, 1, mean)
+#' apply(centered.scaled, 1, sd)
+#' @export
 pre_process_data <- function(phenotype.mx, scale.pheno = TRUE){
     var.vec <- apply(phenotype.mx, 1, var)
     var0.count <- sum(var.vec == 0)

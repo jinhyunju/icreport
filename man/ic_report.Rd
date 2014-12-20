@@ -3,7 +3,7 @@
 \alias{ic_report}
 \title{Automated ICA report generator}
 \usage{
-ic_report(ica.result, prefix, output.path = NULL)
+ic_report(ica.result, prefix, output.path = NULL, file.ext = "png")
 }
 \arguments{
 \item{ica.result}{ICA result list created by the function run_ica.   \code{ica.result}}

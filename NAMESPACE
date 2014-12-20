@@ -2,10 +2,13 @@
 
 export(IC_variance_calc)
 export(component_association_test)
+export(fastICA_gene_expr)
 export(ic_report)
+export(ica_R_par)
 export(k_est_multirun)
 export(k_est_singlerun)
 export(multiplot)
+export(pc_report)
 export(peak_detection)
 export(plot_coeff_w_legend)
 export(plot_component)

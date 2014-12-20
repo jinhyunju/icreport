@@ -14,10 +14,10 @@ IC_variance_calc(s, a)
 A single number of how much variantion is explained by a single IC.
 }
 \description{
-The function takes in a single row of the A matrix and a
-single column of the S matrix and calculates the sums of squares.
+The function takes in a single row of the ICA result A matrix and a
+single column of the ICA result S matrix and calculates the sums of squares.
 }
 \examples{
-R code here showing how your function works
+IC_variance_calc(ica.result$S[,1],ica.result$A[1,])
 }
 
