@@ -11,8 +11,6 @@
 #'
 #' @export
 #'
-#' @examples
-#' R code here showing how your function works
 component_association_test <- function(input.A, info.input, covar.names){
 
       n.components <- dim(input.A)[1]

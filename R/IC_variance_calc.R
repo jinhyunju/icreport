@@ -7,10 +7,6 @@
 #' @param a A single row of the A matrix with dimensions N x 1 \code{a}
 #' @return A single number of how much variantion is explained by a single IC.
 #'
-#' @export
-#'
-#' @examples
-#' IC_variance_calc(ica.result$S[,1],ica.result$A[1,])
 IC_variance_calc <- function(s, a){
   var.IC <- sum(  (as.matrix(s) %*% t(as.matrix(a) ) )^2)
   return(var.IC)

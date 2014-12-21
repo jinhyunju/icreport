@@ -17,26 +17,49 @@ figure.outpath <- paste(output.path,data.set,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
+```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
 
-```{r Read_Function_Data, echo = FALSE, include = FALSE}
-########################################################################################################
-###########################     Declaring Functions for the analysis     ###############################
-########################################################################################################
+update_geom_defaults("bar",list(fill = "black"))
 
-#source("./ICA_realdata_function.R")
+var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
+
+summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
+                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)))
+
+summary.plots <- list()
+summary.plots[[1]] <- ggplot(summary.pca.df, aes(x = idx, y = VarPercent)) + geom_line() +
+                            xlab("PC index") + ylab("Variance Explained") + 
+                            labs(title ="Variance by Component")
+summary.plots[[2]] <- ggplot(summary.pca.df, aes(x = PC1, y = PC2)) + geom_point(size = 3) +
+                            xlab("PC1") + ylab("PC2")
 
 
+for( p in 1:length(summary.plots)){
+    summary.plots[[p]] <- summary.plots[[p]] +
+        theme(axis.text = element_text(size=10), 
+                          axis.title=element_text(size=12,face="bold"), 
+                          title = element_text(size=14,face="bold"),
+                          legend.position = "none",
+                          panel.grid.major = element_line(colour = "grey80", linetype="dashed"),
+                          panel.background = element_rect(fill = NA,color = "grey80")) 
+
+  
+}
+
+multiplot(plotlist = summary.plots,cols = 2)
+  
 ```
 
 
-### PCA Mclust Plots
+
+### Principal Components 
 
 ```{r Individual_PC_plots, echo = FALSE,comment=NA,warning=FALSE, fig.width = 10,fig.height = 5}
 # Plotting for NH.ica.45
 
 
 # start for 
-for( i in 1:dim(pca.result$x)[2]){
+for( i in 1:plot.pc){
 
   mclust.plots <- list()
  
@@ -139,8 +162,9 @@ for( i in 1:dim(pca.result$x)[2]){
   }
  cat("-------------------------------------------------------------------------------------------------------------------","\n")
 
-  multiplot(plotlist = mclust.plots, layout = layout)
   
+  suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))
+    
 }
 
 ```

@@ -18,8 +18,5 @@ The function takes in the A matrix from the ica.result object
 with a dataframe of measured covariates to test the association
 between them.
 }
-\examples{
-R code here showing how your function works
-}
 \keyword{keywords}
 
