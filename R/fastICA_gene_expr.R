@@ -8,6 +8,7 @@
 #' @return List with the following entries.
 #' @keywords keywords
 #'
+#' @import MASS
 #' @export
 #'
 #' @examples
@@ -40,12 +41,6 @@ fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
             stop("w.init is not a matrix or is the wrong size")
     }
 
-    if (verbose) message("Centering")
-
-    X <- pre_process_data(phenotype.mx = X, scale.pheno = scale.pheno)
-
-    if (verbose) message("Whitening")
-
     pca.X <- prcomp(X)         # X is still g x N
 
     K.comp <- pca.X$rotation[,c(1:n.comp)]        # k principal components
@@ -63,7 +58,7 @@ fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
     # reconstructing data before output
     w <- a %*% t(K)    # k x k %*% k x N = k x N
     S <- w %*% X    # k x N %*% N x g = k x g
-    A <- t(w) %*% solve(w %*% t(w)) # N x k x k x k  = N x k
+    A <- t(w) %*% ginv(w %*% t(w)) # N x k x k x k  = N x k
 
     X <- t(X) # g X N
     W <- t(a) # N x k

@@ -56,8 +56,6 @@ for( p in 1:dim(ica.result$A)[1]){
     
     # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
     mclust.obj <- suppressMessages(mclust::Mclust(ica.result$A[i,], modelNames = "V"))
-    mclust.bic.df <- data.frame("V" = mclust.obj$BIC, "N.clust" = attr(mclust.obj$BIC,"G"))
-    mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,"data" = mclust.obj$data )
   
     mclust.plots <- list()
    

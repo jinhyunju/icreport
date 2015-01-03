@@ -4,7 +4,7 @@
 \title{Automated ICA analysis with Report}
 \usage{
 run_ica(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
-  k.est = "default", scale.pheno = FALSE, n.runs = 5, max.iter = 10,
+  k.est = NULL, scale.pheno = FALSE, n.runs = 5, max.iter = 10,
   n.cores = 1, cor.threshold = 0.05, ...)
 }
 \arguments{

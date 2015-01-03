@@ -11,7 +11,6 @@
 #' @keywords keywords
 #'
 #' @import ggplot2
-#' @import mclust
 #' @import knitr
 #'
 #' @export
