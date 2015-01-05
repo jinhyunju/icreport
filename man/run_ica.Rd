@@ -4,8 +4,8 @@
 \title{Automated ICA analysis with Report}
 \usage{
 run_ica(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
-  k.est = NULL, scale.pheno = FALSE, n.runs = 5, max.iter = 10,
-  n.cores = 1, cor.threshold = 0.05, ...)
+  k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3, n.runs = 5,
+  max.iter = 10, n.cores = NULL, cor.threshold = 0.05, ...)
 }
 \arguments{
 \item{phenotype.mx}{Phenotype matrix with diemnsions g x N   \code{phenotype.mx}}

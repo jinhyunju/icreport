@@ -11,6 +11,13 @@ opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALS
 ```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
 update_geom_defaults("bar",list(fill = "black"))
 
+if(!is.null(ica.result$hclust)){
+      plot(ica.result$hclust$plot, labeles = FALSE, main = "Hierarchical Clustering of Multiple ICA Runs")
+      abline(h=ica.result$hclust$h.clust.cutoff, col="red", lty=2)
+  
+}
+
+
 if(!is.null(ica.result$ica.stat.df)){
   
     summary.plots <- list()

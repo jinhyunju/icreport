@@ -8,6 +8,7 @@
 #' that should be used for association testing with IC coefficients \code{check.covars}
 #' @param k.est Number of components to be estimated or method to estimate it. \code{k.est}
 #' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}
+#' @param h.clust.cutoff is the cutoff value used in hierarchical clustering. Default is set to 0.3. \code{h.clust.cutoff}
 #' @param n.runs Number of runs for estimating k. Default value is set to 5. \code{n.runs}
 #' @param max.iter Maximum iterations for estimating k for each run. Default value is set to 10. \code{max.iter}
 #' @param n.cores Number of cores to be used for estimating k. Default is set to 1. \code{n.cores}
@@ -21,46 +22,103 @@
 #' @examples
 #' R code here showing how your function works
 run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
-                    k.est = NULL, scale.pheno = FALSE,
-                    n.runs = 5, max.iter = 10, n.cores = 1, cor.threshold = 0.05, ...){
+                    k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3,
+                    n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05, ...){
 
     if(is.null(phenotype.mx)){
         cat("Error: Phenotype matrix is missing \n")
         break;
     }
+
+    if(is.null(n.cores)){
+        n.cores = 1
+    }
     # removing 0 variance genes and scaling and centering the phenotype matirx
     phenotype.mx <- pre_process_data(phenotype.mx, scale.pheno = scale.pheno)
 
-    # Estimating the number of components
-    k.est.plot.df <- NULL
+
     if(is.null(k.est)){
-        cat("Method for estimating k = Default (limiting dimension of phenotype matrix) \n")
-
-        k.est <- min(dim(phenotype.mx))
-
-        cat("Number of Components = ",k.est,"\n")
-
-    } else if (k.est == "repratio"){
-        cat("Method for estimating k = Replicatio ratio \n")
-
-        k.est.result <- k_est_multirun(phenotype.mx, n.runs = n.runs,
-                                     max.iter = max.iter,n.core = n.cores)
-        k.est <- k.est.result[["k.est"]]
-        k.est.plot.df <- k.est.result[["plot.df"]]
-        cat("Number of Components = ",k.est,"\n")
+      svd.pheno <- svd(phenotype.mx)
+      percent <- (cumsum(svd.pheno$d) /sum(svd.pheno$d)) * 100
+      k.est <- which(percent > 99)[1]
     }
 
-    cat("Running ICA with ",k.est, " Independent Componenets \n")
+    ica.list <- list()
+    ica.result <- list()
+
+    if(n.runs >1){
+      cat("Running ICA ",n.runs," time(s) on",n.cores," core(s) \n")
+      cat(k.est,"Components are estimated in each run \n")
+      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
+                                                               alg.typ = "parallel",method = "R",
+                                                               fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
+                                                               alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+                                                               maxit=500,tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
+
+      for(i in 1:length(ica.list)){
+
+        ica.list[[i]]$peak.mx <- apply(ica.list[[i]]$S, 2, function(x) 1*(abs(x) > 2*sd(x)))
+
+      }
+
+      # After running ICA sevaral times
+      combined.A <- do.call(rbind, lapply(ica.list, function(x) x$A))
+      combined.S <- do.call(cbind, lapply(ica.list, function(x) x$S)) # combine all components into a single matrix
+      peak.matrix <- do.call(cbind, lapply(ica.list, function(x) x$peak.mx)) # combine all peak position matrices as well
+      peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
+
+      cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
+
+      dissimilarity <- 1 - abs(cor.mx) # create dissimilarity matrix
+      cor.dist <- as.dist(dissimilarity) # convert into distance matrix format for clustering
+      h.clust <- hclust(cor.dist)          # run hierarchical clustering
+
+      #plot(h.clust)                      # plot hierarchical clustering results
+      groups <- cutree(h.clust, h=h.clust.cutoff)   # cut tree at height 0.3 (absolute correlation > 0.7)
+      # draw dendogram with red borders around the 5 clusters
+      plot(h.clust)
+      abline(h=h.clust.cutoff, col="red", lty=2)
 
 
-    ica.result <- fastICA::fastICA(phenotype.mx, k.est,
-                           alg.typ = "parallel",method = "C",
-                           fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-                           alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                           maxit=500,tol = 0.0001, verbose = FALSE)
+      group.table <- table(groups)     # count member components for each group
+      multi.component.group <- which(group.table > (n.runs * 0.6)) # get groups with more than 2 members
 
+      k.update <- length(multi.component.group)
 
-#    ica.result <- fastICA_gene_expr(phenotype.mx, k.est)
+      Avg.S <- matrix(0,nrow = dim(combined.S)[1],ncol = k.update)
+      Avg.A <- matrix(0,nrow = k.update, ncol = dim(combined.A)[2])
+      # for each group calculate the average component
+      for(i in 1:length(multi.component.group)){
+          group.members <- which(groups %in% multi.component.group[i]) # get component indexes for groups with multiple components
+          sub.group.S <- combined.S[,group.members]                # subset matrix for those components
+          sub.group.A <- combined.A[group.members,]
+          group.cor.mx <- cor(sub.group.S)                       # calculate correlation between them
+          match.sign <- ifelse(group.cor.mx[,1] < 0, -1,1 )  # in order to average the components signs need to be matched (positive vs negative)
+          avg.component <- (sub.group.S %*% match.sign) / length(match.sign) # calculate the mean component
+          avg.mixing <- (match.sign %*% sub.group.A ) / length(match.sign)
+
+          Avg.S[,i] <- avg.component
+          Avg.A[i,] <- avg.mixing
+      }
+      hclust.list <- list()
+      hclust.list$plot <- h.clust
+      hclust.list$cutoff <- h.clust.cutoff
+      hclust.list$dist.mx <- dissimilarity
+      ica.result$hclust <- hclust.list
+      ica.result$S <- Avg.S
+      ica.result$A <- Avg.A
+
+      rm(Avg.S,Avg.A)
+
+    } else if (n.runs ==1){
+
+      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
+                                     alg.typ = "parallel",method = "R",
+                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
+                                     alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+                                     maxit=500,tol = 0.0001, verbose = FALSE)
+
+    }
 
     rownames(ica.result$S) <- rownames(phenotype.mx)                   # Setting appropriate names for signals and mixing matrix
     colnames(ica.result$A) <- colnames(phenotype.mx)
@@ -68,11 +126,6 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
 
     # Attaching the sample info dataframe to the ica list
     ica.result$info.df <- info.df
-
-    if(!is.null(k.est.plot.df)){
-        ica.result$k.plot.df <- k.est.plot.df
-        rm(k.est.plot.df)
-    }
 
     cat("Estimating Number of Peaks in each IC \n")
     ica.result$peak.results <- apply(ica.result$S, 2, peak_detection)
@@ -90,7 +143,7 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
     # % variance explained by each IC
     percent.var <- (var.IC / total.var) * 100
 
-    cat("Sanity Check : Total % of variance explained by",k.est,"ICs = ", sum(percent.var), "\n")
+    cat("Sanity Check : Total % of variance explained by",k.update,"ICs = ", sum(percent.var), "\n")
 
     cat("Creating index based on Variance explained \n")
     ica.result$order <- order(percent.var,decreasing = T) # ordering the ICs based on the amount of variance they explain
@@ -118,10 +171,10 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
 
 
     if(is.null(ica.result$cov.corr.idx)){
-        sig <- rep(0,k.est)
+        sig <- rep(0,k.update)
         correlated.ic <- NULL
     } else{
-        sig <- rep(0,k.est)
+        sig <- rep(0,k.update)
         correlated.ic <- unique(ica.result$cov.corr.idx$Signal.idx)
         sig[correlated.ic] <- 1
     }
@@ -131,7 +184,7 @@ run_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
     ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peak.results, function(x) x$N), # Number of peaks for each IC
                                          "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
                                          "percent.var" = percent.var,                                     # Percent variance explained
-                                         "corr.ic" = factor(sig), "idx" = c(1:k.est))             # if correlated with covariate = 1 , 0 otherwise
+                                         "corr.ic" = factor(sig), "idx" = c(1:k.update))             # if correlated with covariate = 1 , 0 otherwise
 
 
     # which IC has more than 1 predicted clusters?
