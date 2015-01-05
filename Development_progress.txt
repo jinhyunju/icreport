@@ -6,7 +6,6 @@ Contact: jinhyun.ju@gmail.com
 Project initiated on: 3.Dec.2014
 
 #########################################
-Day1)
 
 Information based on Hadley Wickham's R package building tutorial.
 http://r-pkgs.had.co.nz/intro.html
@@ -38,3 +37,12 @@ devtools::create("~/Dropbox/vicetools")
 
 # Load all > devtools::load_all() or Cmd + Shift + L
 # Build and reload > Cmd + Shift + B (only in rstudio)
+
+
+### [4] Initiated github repository
+
+# git@github.com/jinhyunju/icreport.git
+
+
+### [5] Implemented ICA clustering method for checking reproducibility
+
