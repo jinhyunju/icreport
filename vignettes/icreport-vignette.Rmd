@@ -19,18 +19,21 @@ If you already know what you want to use the package for, follow this simple exa
 
 ```{r Install bladder batch, eval = FALSE}
 source("http://bioconductor.org/biocLite.R")
-biocLite("bladderbatch")
+biocLite("golubEsets")
 ```
 
 
 ```{r Load bladder batch}
-library(bladderbatch)
-data(bladderdata)
+library(golubEsets)
+data(Golub_Merge)
 
-info.df <- pData(bladderEset)    # dimensions 57 x 4 (57 samples, 4 features) is the info.df 
-expr <- exprs(bladderEset)     # dimensions 22283 x 57 (22283 probes, 57 samples)
 
-info.df$batch <- as.factor(info.df$batch) #changing the numerical column into factors
+info.df <- pData(Golub_Merge)    # dimensions 57 x 4 (57 samples, 4 features) is the info.df 
+expr <- exprs(Golub_Merge)     # dimensions 22283 x 57 (22283 probes, 57 samples)
+
+
+check.covars <- c("ALL.AML","T.B.cell","Gender","Source")
+#info.df$batch <- as.factor(info.df$batch) #changing the numerical column into factors
 
 
 ```
@@ -39,7 +42,7 @@ info.df$batch <- as.factor(info.df$batch) #changing the numerical column into fa
 
 ```{r Run ICA}
 library(icreport)
-bladder_ica <- run_ica(phenotype.mx = expr, info.df = info.df, check.covars = c("outcome","batch"),n.runs = 5,n.cores = 5)
+bladder_ica <- run_ica(phenotype.mx = expr, info.df = info.df, check.covars = check.covars)
 
 ```
 

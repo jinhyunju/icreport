@@ -19,6 +19,8 @@ that should be used for association testing with IC coefficients \code{check.cov
 
 \item{scale.pheno}{Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}}
 
+\item{h.clust.cutoff}{is the cutoff value used in hierarchical clustering. Default is set to 0.3. \code{h.clust.cutoff}}
+
 \item{n.runs}{Number of runs for estimating k. Default value is set to 5. \code{n.runs}}
 
 \item{max.iter}{Maximum iterations for estimating k for each run. Default value is set to 10. \code{max.iter}}
