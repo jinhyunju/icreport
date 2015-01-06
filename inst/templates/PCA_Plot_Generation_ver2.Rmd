@@ -24,14 +24,26 @@ update_geom_defaults("bar",list(fill = "black"))
 var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
 
 summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
-                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)))
+                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)), info.df[rownames(pca.result$x),])
 
 summary.plots <- list()
+
 summary.plots[[1]] <- ggplot(summary.pca.df, aes(x = idx, y = VarPercent)) + geom_line() +
                             xlab("PC index") + ylab("Variance Explained") + 
                             labs(title ="Variance by Component")
-summary.plots[[2]] <- ggplot(summary.pca.df, aes(x = PC1, y = PC2)) + geom_point(size = 3) +
+
+if(1 %in% pca.result$cov.corr.idx$Signal.idx){
+    most.significant.corr <- which.min(pca.result$cov.pval.mx[1,])
+    color.by <- names(most.significant.corr)
+    summary.plots[[2]] <- ggplot(summary.pca.df, aes_string(x = "PC1", y = "PC2", col = color.by)) + geom_point(size = 3) +
                             xlab("PC1") + ylab("PC2")
+} else {
+   
+    summary.plots[[2]] <- ggplot(summary.pca.df, aes(x = PC1, y = PC2)) + geom_point(size = 3) +
+                            xlab("PC1") + ylab("PC2")
+}
+
+
 
 
 for( p in 1:length(summary.plots)){
@@ -39,7 +51,7 @@ for( p in 1:length(summary.plots)){
         theme(axis.text = element_text(size=10), 
                           axis.title=element_text(size=12,face="bold"), 
                           title = element_text(size=14,face="bold"),
-                          legend.position = "none",
+                          legend.position = "top",
                           panel.grid.major = element_line(colour = "grey80", linetype="dashed"),
                           panel.background = element_rect(fill = NA,color = "grey80")) 
 
@@ -66,8 +78,6 @@ for( i in 1:plot.pc){
   mclust.obj <- suppressMessages(Mclust(pca.result$x[,i], modelNames = "V"))
   mclust.bic.df <- data.frame("V" = mclust.obj$BIC, "N.clust" = attr(mclust.obj$BIC,"G"))
   mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,"data" = mclust.obj$data )
-
-  
 
  # Plot IC loading with peaks labeled in red
   mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],paste(data.set,"_PC#_",i,sep =""))
@@ -98,9 +108,7 @@ for( i in 1:plot.pc){
      mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,plot.title = paste("Covariate = ",color.by,sep="")) + theme(legend.position ="none")
      
      mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-       geom_boxplot() + xlab("Covariate")+
-       ylab("IC coefficient") +  theme(axis.ticks = element_blank(), axis.text.x = element_blank())+ylab("")
-       #+ theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+       geom_boxplot() + xlab("Covariate") + theme(axis.text.x = element_blank()) + ylab("")
     } else if(mclust.obj$G != 1){
     # If IC is not correlated to covariate color it using the clustering information obtained from mclust
 
@@ -111,7 +119,7 @@ for( i in 1:plot.pc){
       scale_color_brewer(palette = "Set1") 
     
     mclust.plots[[3]] <- ggplot(coeff.plot.df, aes(x = mclust, y = IC, color = mclust)) + 
-      geom_boxplot() + xlab("Covariate")+ylab("IC coefficient") +  
+      geom_boxplot() + xlab("Covariate") +
       theme(axis.ticks = element_blank(), axis.text.x = element_blank())+ylab("")
 
     } else {

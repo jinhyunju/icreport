@@ -11,6 +11,52 @@ vignette: >
 
 The `icreport` package provides functions that perform independent component analysis on a given data set and can subsequently generate a compact report. 
 
+## Quick Start
+
+If you already know what you want to use the package for, follow this simple example to get started!
+
+1) Installing and loading an example dataset that is available through bioconductor.
+
+```{r Install bladder batch, eval = FALSE}
+source("http://bioconductor.org/biocLite.R")
+biocLite("bladderbatch")
+```
+
+
+```{r Load bladder batch}
+library(bladderbatch)
+data(bladderdata)
+
+info.df <- pData(bladderEset)    # dimensions 57 x 4 (57 samples, 4 features) is the info.df 
+expr <- exprs(bladderEset)     # dimensions 22283 x 57 (22283 probes, 57 samples)
+
+info.df$batch <- as.factor(info.df$batch) #changing the numerical column into factors
+
+
+```
+
+2) Running ICA on the expression dataset. 
+
+```{r Run ICA}
+library(icreport)
+bladder_ica <- run_ica(phenotype.mx = expr, info.df = info.df, check.covars = c("outcome","batch"),n.runs = 5,n.cores = 5)
+
+```
+
+3) Creating a report file in the current working directory
+
+```{r ICA report}
+ic_report(ica.result = bladder_ica, prefix = "Bladder_ICA")
+```
+
+4) Generating a PCA report file 
+
+```{r PCA report}
+
+pc_report(phenotype.mx = expr, info.df = info.df, check.covars = c("outcome","batch"),prefix = "Bladder_PCA" )
+
+```
+
 Gene expression analyses with RNA sequencing or microarray produce extremely high dimensional datasets containing approximately 20,000 or more features per sample. Inspecting such large datasets is no easy task. Heatmaps or Principal Component Analysis (PCA) are commonly used for visual representation of the data to reveal any hidden structures. Independent component analysis (ICA) is a method that can give us valuable insight about the hidden structure of the data. 
 
 ## Vignette Info

@@ -12,8 +12,8 @@ opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALS
 update_geom_defaults("bar",list(fill = "black"))
 
 if(!is.null(ica.result$hclust)){
-      plot(ica.result$hclust$plot, labeles = FALSE, main = "Hierarchical Clustering of Multiple ICA Runs")
-      abline(h=ica.result$hclust$h.clust.cutoff, col="red", lty=2)
+      plot(ica.result$hclust$plot, labels = FALSE, main = "Hierarchical Clustering of Multiple ICA Runs")
+      abline(h=ica.result$hclust$cutoff, col="red", lty=2)
   
 }
 

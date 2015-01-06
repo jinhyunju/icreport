@@ -41,7 +41,7 @@ devtools::create("~/Dropbox/vicetools")
 
 ### [4] Initiated github repository
 
-# git@github.com/jinhyunju/icreport.git
+# git@github.com:jinhyunju/icreport.git
 
 
 ### [5] Implemented ICA clustering method for checking reproducibility
