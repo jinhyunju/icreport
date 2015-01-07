@@ -181,6 +181,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
     mclust.result <- suppressMessages(apply(ica.result$A, 1, function(x) Mclust(x)))
 
+
     ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peak.results, function(x) x$N), # Number of peaks for each IC
                                          "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
                                          "percent.var" = percent.var,                                     # Percent variance explained

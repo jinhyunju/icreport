@@ -19,7 +19,7 @@ if(!is.null(ica.result$hclust)){
 }
 
 
-if(!is.null(ica.result$ica.stat.df)){
+if(!is.null(ica.result$info.df)){
   
     summary.plots <- list()
     summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name,col = Covariate.Name)) + geom_bar()
