@@ -15,22 +15,39 @@ The `icreport` package provides functions that perform independent component ana
 
 If you already know what you want to use the package for, follow this simple example to get started!
 
-1) Installing and loading an example dataset that is available through bioconductor.
+1) Installing the package through the function ```{install_github}``` from the package ```{devtools}```
 
-```{r Install bladder batch, eval = FALSE}
+```{r Install icreport, eval = FALSE}
+install.package("devtools") # in case you don't have devtools already
+
+devtools::install_github("jinhyunju/icreport") #installing icreport
+
+```
+
+2) Installing and loading an example dataset that is available through bioconductor.
+
+- Here we are going to use the bladderbatch dataset that was introduced in the sva tutorial. (link to sva tutorial)
+
+- You can use your own dataset, it just needs to be a matrix which has the dimension of gene x samples
+
+```{r Install golub dataset, eval = FALSE}
 source("http://bioconductor.org/biocLite.R")
 biocLite("golubEsets")
 ```
 
 
-```{r Load bladder batch}
+```{r Install bladder batch, eval = FALSE}
+source("http://bioconductor.org/biocLite.R")
+biocLite("bladderbatch")
+```
+
+
+```{r Load golub}
 library(golubEsets)
 data(Golub_Merge)
 
-
 info.df <- pData(Golub_Merge)    # dimensions 57 x 4 (57 samples, 4 features) is the info.df 
 expr <- exprs(Golub_Merge)     # dimensions 22283 x 57 (22283 probes, 57 samples)
-
 
 check.covars <- c("ALL.AML","T.B.cell","Gender","Source")
 #info.df$batch <- as.factor(info.df$batch) #changing the numerical column into factors
@@ -38,68 +55,44 @@ check.covars <- c("ALL.AML","T.B.cell","Gender","Source")
 
 ```
 
+```{r Load bladder batch, eval = FALSE, echo= FALSE }
+library(bladderbatch)
+data(bladderdata)
+
+info.df <- pData(bladderEset)    # dimensions 57 x 4 (57 samples, 4 features) is the info.df 
+expr <- exprs(bladderEset)     # dimensions 22283 x 57 (22283 probes, 57 samples)
+
+
+info.df$batch <- as.factor(info.df$batch) #changing the numerical column into factors
+check.covars <- c("batch","outcome")
+
+```
+
 2) Running ICA on the expression dataset. 
 
-```{r Run ICA}
+```{r Run ICA, eval = FALSE}
 library(icreport)
-bladder_ica <- run_ica(phenotype.mx = expr, info.df = info.df, check.covars = check.covars)
+ica_result <- gene_expr_ica(phenotype.mx = expr, info.df = info.df, check.covars = check.covars)
 
 ```
 
 3) Creating a report file in the current working directory
 
-```{r ICA report}
-ic_report(ica.result = bladder_ica, prefix = "Bladder_ICA")
+- prefix specifies the name of the html report file. 
+
+
+```{r ICA report, eval = FALSE}
+ic_report(ica.result = ica_result, prefix = "ICA_Report")
 ```
+
 
 4) Generating a PCA report file 
 
-```{r PCA report}
+```{r PCA report, eval = FALSE}
 
-pc_report(phenotype.mx = expr, info.df = info.df, check.covars = c("outcome","batch"),prefix = "Bladder_PCA" )
+pc_report(phenotype.mx = expr, info.df = info.df, check.covars = check.covars,prefix = "Golub_PCA" )
 
 ```
 
 Gene expression analyses with RNA sequencing or microarray produce extremely high dimensional datasets containing approximately 20,000 or more features per sample. Inspecting such large datasets is no easy task. Heatmaps or Principal Component Analysis (PCA) are commonly used for visual representation of the data to reveal any hidden structures. Independent component analysis (ICA) is a method that can give us valuable insight about the hidden structure of the data. 
 
-## Vignette Info
-
-Note the various macros within the `vignette` setion of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
-```
-
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))

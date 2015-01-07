@@ -36,6 +36,6 @@ ic_report <- function(ica.result,prefix,output.path = NULL, file.ext = "png"){
 
     outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")
 
-    rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document")
+    suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
 
 }

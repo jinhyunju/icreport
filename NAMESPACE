@@ -2,6 +2,7 @@
 
 export(component_association_test)
 export(fastICA_gene_expr)
+export(gene_expr_ica)
 export(ic_report)
 export(ica_R_par)
 export(k_est_multirun)

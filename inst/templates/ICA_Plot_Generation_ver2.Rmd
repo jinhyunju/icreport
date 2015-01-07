@@ -2,7 +2,7 @@
 
 ```{r global_options, include=FALSE}
 # setting global options 
-figure.outpath <- paste(output.path,"/",prefix,"_figures/",sep="")
+figure.outpath <- paste(output.path,"/knitr_figures/",prefix,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
@@ -12,7 +12,8 @@ opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALS
 update_geom_defaults("bar",list(fill = "black"))
 
 if(!is.null(ica.result$hclust)){
-      plot(ica.result$hclust$plot, labels = FALSE, main = "Hierarchical Clustering of Multiple ICA Runs")
+      n.ics <- dim(ica.result$A)[1]
+      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",n.ics,"significant ICs"))
       abline(h=ica.result$hclust$cutoff, col="red", lty=2)
   
 }

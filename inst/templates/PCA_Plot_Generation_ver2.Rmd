@@ -13,7 +13,7 @@
 
 ```{r global_options, include=FALSE}
 # setting global options 
-figure.outpath <- paste(output.path,data.set,"_figures/",sep="")
+figure.outpath <- paste(output.path,"/",data.set,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
