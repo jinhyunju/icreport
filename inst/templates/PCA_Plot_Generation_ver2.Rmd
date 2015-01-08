@@ -23,8 +23,16 @@ update_geom_defaults("bar",list(fill = "black"))
 
 var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
 
-summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
+
+if(!is.null(info.df)){
+    summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
                              "VarPercent" = var.percent, "idx" = c(1:length(var.percent)), info.df[rownames(pca.result$x),])
+     
+} else{
+    summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
+                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)))
+
+}
 
 summary.plots <- list()
 
@@ -42,8 +50,6 @@ if(1 %in% pca.result$cov.corr.idx$Signal.idx){
     summary.plots[[2]] <- ggplot(summary.pca.df, aes(x = PC1, y = PC2)) + geom_point(size = 3) +
                             xlab("PC1") + ylab("PC2")
 }
-
-
 
 
 for( p in 1:length(summary.plots)){
