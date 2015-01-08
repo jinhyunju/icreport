@@ -2,11 +2,13 @@
 #'
 #' Generating a HTML report from a ICA list object.
 #'
-#' @param ica.result ICA result list created by the function run_ica.   \code{ica.result}
+#' @param ica.result ICA result list created by the function run_ica.
 #' @param prefix Output filename prefix. The output file will be named
-#'        "prefix_ICA_summary.html". \code{prefix}
+#'        "prefix_ICA_summary.html".
 #' @param output.path Directory path for generating the output HTML file.
-#'        default is set to current working directory. \code{output.path}
+#'        default is set to current working directory.
+#' @param file.ext File extension to be used for saved plots. Default is set to png for html reports.
+#'        Note that if you use pdf plots for html files they will not show up in your report.
 #' @return output HTML report that
 #' @keywords keywords
 #'

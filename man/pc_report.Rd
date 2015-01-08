@@ -3,31 +3,22 @@
 \alias{pc_report}
 \title{Automated PCA report generator}
 \usage{
-pc_report(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
-  plot.pc = NULL, cor.threshold = 0.05, prefix = NULL,
+pc_report(pca.result = NULL, plot.pc = NULL, prefix = NULL,
   output.path = NULL, file.ext = "png")
 }
 \arguments{
-\item{info.df}{Sample information dataframe to be used for covariate correlation \code{info.df}}
-
-\item{check.covars}{Names of covariates in info.df (column names)
-that should be used for association tests \code{check.covars}}
+\item{pca.result}{PCA result list created by the function prcomp().   \code{pca.result}}
 
 \item{plot.pc}{Number of principal components to plot. Default is set to plot every PC. \code{plot.pc}}
-
-\item{cor.threshold}{Threshold in calling an association between a covariate and a PC signiciant.
-Default value is set to 0.05. \code{cor.threshold}}
 
 \item{prefix}{Output filename prefix. The output file will be named
 "prefix_ICA_summary.html". \code{prefix}}
 
 \item{output.path}{Directory path for generating the output HTML file.
-       default is set to current working directory. \code{output.path}}
+default is set to current working directory. \code{output.path}}
 
 \item{file.ext}{Extension of plots saved in the process of compiling the HTML report.
 Default is set to png format. \code{file.ext}}
-
-\item{pca.result}{PCA result list created by the function prcomp().   \code{pca.result}}
 }
 \value{
 output HTML report that contains component wise visualization and summary plots.

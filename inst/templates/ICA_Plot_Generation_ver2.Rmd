@@ -1,4 +1,4 @@
-## Component-wise Summary Report
+## Independent Component Analysis Summary Report
 
 ```{r global_options, include=FALSE}
 # setting global options 
@@ -6,7 +6,7 @@ figure.outpath <- paste(output.path,"/knitr_figures/",prefix,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
-### ICA Covariate Correlation Summary
+### Covariate Correlation Summary
 
 ```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
 update_geom_defaults("bar",list(fill = "black"))

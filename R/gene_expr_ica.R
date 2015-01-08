@@ -1,18 +1,18 @@
-#' Automated ICA analysis with Report
+#' Custom ICA function for analyzing gene expression data.
 #'
 #' Performing ICA on a dataset and create a list object with results.
 #'
-#' @param phenotype.mx Phenotype matrix with diemnsions g x N   \code{phenotype.mx}
-#' @param info.df Dataframe that holds sample covariates (ex. population, gender, age, etc...) \code{info.df}
+#' @param phenotype.mx Phenotype matrix with diemnsions g x N
+#' @param info.df Dataframe that holds sample covariates (ex. population, gender, age, etc...)
 #' @param check.covars Column names of info.df which hold the covariates
-#' that should be used for association testing with IC coefficients \code{check.covars}
-#' @param k.est Number of components to be estimated or method to estimate it. \code{k.est}
-#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}
-#' @param h.clust.cutoff is the cutoff value used in hierarchical clustering. Default is set to 0.3. \code{h.clust.cutoff}
-#' @param n.runs Number of runs for estimating k. Default value is set to 5. \code{n.runs}
-#' @param max.iter Maximum iterations for estimating k for each run. Default value is set to 10. \code{max.iter}
-#' @param n.cores Number of cores to be used for estimating k. Default is set to 1. \code{n.cores}
-#' @param cor.threshold Threshold for significant correlation calling. Default is set to 0.05 \code{cor.threshold}
+#' that should be used for association testing with IC coefficients.
+#' @param k.est Number of components to be estimated or method to estimate it.
+#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx.
+#' @param h.clust.cutoff is the cutoff value used in hierarchical clustering. Default is set to 0.3.
+#' @param n.runs Number of runs for estimating k. Default value is set to 5.
+#' @param max.iter Maximum iterations for estimating k for each run. Default value is set to 10.
+#' @param n.cores Number of cores to be used for estimating k. Default is set to 1.
+#' @param cor.threshold Threshold for significant correlation calling. Default is set to 0.05.
 #' @return List with the following entries.
 #' @keywords keywords
 #'
