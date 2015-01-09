@@ -44,13 +44,27 @@ tellme_aboutit <- function(what = NULL, how = "ica", n.comps = NULL, prefix = NU
 
         ica.result <- what
         info.df <- ica.result$info.df
-
         data.set <- prefix
-        markdown.file <- system.file("templates/ICA_Plot_Generation_ver2.Rmd", package="icreport")
 
-        outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")
+        if( is.null(ica.result$geneinfo)){
+          markdown.file <- system.file("templates/ICA_Plot_Generation_ver2.Rmd", package="icreport")
 
-        suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
+          outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")
+
+          suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
+
+        } else if (!is.null(ica.result$geneinfo)){
+          # delete this part once plotting file is combined to one
+          # Reason:  duplicate if statement checking is.null(ica.result$geneinfo)
+          markdown.file <- system.file("templates/ICA_Plot_Generation_extended.Rmd", package="icreport")
+
+          outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")
+
+          suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
+
+
+
+        }
 
     } else if (how == "pca"){
 
