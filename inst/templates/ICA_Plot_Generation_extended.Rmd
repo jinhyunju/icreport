@@ -273,6 +273,7 @@ for( p in 1:dim(ica.result$A)[1]){
         geneinfo.df <- ica.result$geneinfo[[i]]
         geneinfo.df$length <- geneinfo.df$end_position - geneinfo.df$start_position
         
+        geneinfo.df <- na.omit(data.frame(geneinfo.df,"gene_weight" = abs(ica.test$peaks[[i]][as.character(geneinfo.df$row_ids)])))
         #Some test data
 
 
@@ -286,7 +287,7 @@ for( p in 1:dim(ica.result$A)[1]){
                                      theme_bw() + #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") + 
                                      xlab("")  + theme(legend.position = "none") + 
                                      scale_x_discrete(drop=TRUE) +
-                                     scale_fill_discrete(drop=TRUE,limits = rev(levels(geneinfo.df$gene_biotype)))
+                                     scale_fill_discrete(drop=TRUE, limits = levels(geneinfo.df$gene_biotype))
        
         # Length summary
         #mclust.plots[[5]] <- ggplot(geneinfo.df, aes(x = length, fill = gene_biotype)) + geom_histogram() + theme_bw() +
