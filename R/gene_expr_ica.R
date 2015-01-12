@@ -69,15 +69,12 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
       cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
 
+
+      # clustering of the components
       dissimilarity <- 1 - abs(cor.mx) # create dissimilarity matrix
       cor.dist <- as.dist(dissimilarity) # convert into distance matrix format for clustering
       h.clust <- hclust(cor.dist)          # run hierarchical clustering
-
-      #plot(h.clust)                      # plot hierarchical clustering results
       groups <- cutree(h.clust, h=h.clust.cutoff)   # cut tree at height 0.3 (absolute correlation > 0.7)
-      # draw dendogram with red borders around the 5 clusters
-      #plot(h.clust, lables = FALSE)
-      #abline(h=h.clust.cutoff, col="red", lty=2)
 
 
       group.table <- table(groups)     # count member components for each group
@@ -128,7 +125,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     ica.result$info.df <- info.df
 
     cat("Estimating Number of Peaks in each IC \n")
-    ica.result$peak.results <- apply(ica.result$S, 2, peak_detection)
+    ica.result$peaks <- apply(ica.result$S, 2, peak_detection)
     # peaks are defined as gene contributions that are larger than 2 standard deviations
     ica.result$peak.mx <- apply(ica.result$S, 2, function(x) 1*(abs(x) > 2*sd(x)))
 
@@ -182,7 +179,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     mclust.result <- suppressMessages(apply(ica.result$A, 1, function(x) Mclust(x)))
 
 
-    ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peak.results, function(x) x$N), # Number of peaks for each IC
+    ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
                                          "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
                                          "percent.var" = percent.var,                                     # Percent variance explained
                                          "corr.ic" = factor(sig), "idx" = c(1:k.update))             # if correlated with covariate = 1 , 0 otherwise
@@ -211,7 +208,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     for ( i in 1:length(hf.vec)){
         k <- hf.vec[i]
         ic.name <- hf.vec.names[i]
-        peak.temp <- names(ica.result$peak.results[[k]]$peaks)
+        peak.temp <- names(ica.result$peaks[[k]])
         ica.result$ica.confeti.mx[peak.temp,ic.name] <- 1
     }
 

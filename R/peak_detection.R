@@ -5,8 +5,8 @@
 #' between them.
 #'
 #' @param s A single column of the S matrix with dimensions 1 x g  \code{s}
-#' @return list with entries "peaks" and "N". "peaks" has the position of peak genes
-#' in the decreasing order of magnitude. "N" has the total number of peak genes.
+#' @return A vector that contains the gene weights of the signficant peaks for a single independent component sorted
+#' in the decreasing order of absolute magnitude.
 #' @keywords keywords
 #'
 #' @export
@@ -14,7 +14,7 @@
 #' @examples
 #' R code here showing how your function works
 peak_detection <- function(ica.input.s){
-  peaks.idx <- which(abs(ica.input.s) > (2 * sd(ica.input.s)))
-  peaks <- sort(abs(ica.input.s[peaks.idx]), decreasing = T)
-  return(list("peaks" = peaks, "N"= length(peaks)))
+  peaks.idx <- which(abs(ica.input.s) > (2 * sd(ica.input.s))) # get the peak indexes
+  peaks <- ica.input.s[names(sort(abs(ica.input.s[peaks.idx]), decreasing = T))] # sort them in decreasing order of absolute magnitude
+  return(peaks)
 }

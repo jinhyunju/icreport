@@ -70,10 +70,10 @@ for( p in 1:dim(ica.result$A)[1]){
         mclust.plots <- list()
        
        # Plot IC loading with peaks labeled in red (If peaks are available)
-        if(!is.null(ica.result$peak.results)){
+        if(!is.null(ica.result$peaks)){
             # If the peaks are labeled use them 
             mclust.plots[[1]] <- plot_component(ica.result$S[,i],peaks = TRUE, 
-                                                peakresult = ica.result$peak.results[[i]], 
+                                                peakresult = ica.result$peaks[[i]], 
                                                 gene.names = rownames(ica.result$S),
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
         } else {
@@ -201,10 +201,10 @@ for( p in 1:dim(ica.result$A)[1]){
         mclust.plots <- list()
        
        # Plot IC loading with peaks labeled in red (If peaks are available)
-        if(!is.null(ica.result$peak.results)){
+        if(!is.null(ica.result$peaks)){
             # If the peaks are labeled use them 
             mclust.plots[[1]] <- plot_component(ica.result$S[,i],peaks = TRUE, 
-                                                peakresult = ica.result$peak.results[[i]], 
+                                                peakresult = ica.result$peaks[[i]], 
                                                 gene.names = rownames(ica.result$S),
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
         } else {
@@ -277,16 +277,16 @@ for( p in 1:dim(ica.result$A)[1]){
 
 
         # chromosome summary plot
-        mclust.plots[[3]] <- ggplot(geneinfo.df, aes(x = chromosome_name, fill = chromosome_name)) + geom_bar() + 
-                                     theme_bw() + theme(legend.position = "none") + xlab("Chromosome") + scale_x_discrete(drop=FALSE) +
+        mclust.plots[[3]] <- ggplot(geneinfo.df, aes(x = chromosome_name, fill = chromosome_name, y = gene_weight)) + geom_bar(stat = "identity") + 
+                                     theme(legend.position = "none") + xlab("Chromosome") + scale_x_discrete(drop=FALSE) +
                                      scale_fill_discrete(drop=TRUE,limits = levels(geneinfo.df$chromosome_name))
-        
+       
         # Biotype summary plot
         mclust.plots[[4]] <- ggplot(geneinfo.df, aes(x = gene_biotype, fill = gene_biotype)) + geom_histogram() + coord_flip() +
                                      theme_bw() + #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") + 
                                      xlab("")  + theme(legend.position = "none") + 
-                                     scale_x_discrete(drop=FALSE,limits = rev(levels(geneinfo.df$gene_biotype)) ) +
-                                     scale_fill_discrete(drop=TRUE,limits = levels(geneinfo.df$gene_biotype))
+                                     scale_x_discrete(drop=TRUE) +
+                                     scale_fill_discrete(drop=TRUE,limits = rev(levels(geneinfo.df$gene_biotype)))
        
         # Length summary
         #mclust.plots[[5]] <- ggplot(geneinfo.df, aes(x = length, fill = gene_biotype)) + geom_histogram() + theme_bw() +

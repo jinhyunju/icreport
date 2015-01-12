@@ -90,7 +90,7 @@ ica_result <- gene_expr_ica(phenotype.mx = expr)
 - prefix specifies the name of the html report file. 
 
 ```{r ICA report, eval = FALSE}
-tellme_aboutit(what = ica_result, how = "ica", prefix = "Test_ICA_Report")
+reprot2me(input = ica_result, mode = "ica", prefix = "Test_ICA_Report")
 ```
 
 ### 3.Running PCA on the expression dataset. 
@@ -119,7 +119,7 @@ pca_result <- gene_expr_pca(phenotype.mx = expr)
 - prefix specifies the name of the html report file. 
 
 ```{r PCA report, eval = FALSE}
-tellme_aboutit(what = pca_result, how = "pca", prefix = "Test_PCA_Report")
+reprot2me(input = pca_result, mode = "pca", prefix = "Test_PCA_Report")
 ```
 
 

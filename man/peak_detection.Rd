@@ -9,8 +9,8 @@ peak_detection(ica.input.s)
 \item{s}{A single column of the S matrix with dimensions 1 x g  \code{s}}
 }
 \value{
-list with entries "peaks" and "N". "peaks" has the position of peak genes
-in the decreasing order of magnitude. "N" has the total number of peak genes.
+A vector that contains the gene weights of the signficant peaks for a single independent component sorted
+in the decreasing order of absolute magnitude.
 }
 \description{
 The function takes in the A matrix from the ica.result object

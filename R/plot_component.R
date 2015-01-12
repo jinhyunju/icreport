@@ -23,8 +23,8 @@ plot_component <- function(s,plot.title,peaks = FALSE, peakresult = NULL, gene.n
     return(p)
   } else {
     G <- length(s)
-    significant.peaks <- names(peakresult$peaks)
-    n.peaks <- peakresult$N
+    significant.peaks <- names(peakresult)
+    n.peaks <- length(peakresult)
     peak.idx <- 1 * (gene.names %in% significant.peaks)
     plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
     plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
