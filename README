@@ -1,3 +1,6 @@
-"icreport" is a package for performing ICA on gene expression data and visualizing the results.
+"icreport" is an R package for performing ICA on gene expression data and visualizing the results.
+
+Package can be installed directly from github using the "devtools" package:
+ devtools::install_github("jinhyunju/icreport")
 
 
