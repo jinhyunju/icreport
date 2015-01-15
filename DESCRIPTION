@@ -13,7 +13,7 @@ Imports:
     mclust,
     parallel,
     knitr,
-	rmarkdown
+    rmarkdown
 VignetteBuilder: knitr
 Suggests:
     testthat

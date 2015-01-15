@@ -14,8 +14,8 @@
 #' @return output HTML report.
 #' @keywords keywords
 #'
-#' @import ggplot2,
-#'         knitr,
+#' @import ggplot2
+#'         knitr
 #'         rmarkdown
 #'
 #' @export
