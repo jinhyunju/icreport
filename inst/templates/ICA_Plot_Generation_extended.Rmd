@@ -110,26 +110,28 @@ for( p in 1:dim(ica.result$A)[1]){
        # If IC is correlated to a covariate color the pot accordingly
         if(i %in% unique(ica.result$cov.corr.idx$Signal.idx)){
           
-            # color the graph by the covariate with the most significant association
-            color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$Signal.idx == i)])]))
-           mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
-                                                    plot.title = paste("Covariate = ",color.by,sep="")) + 
-                                                    theme(legend.position ="none")
-           
-           # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
-           # Need to figure out which plot might be most effective
-           
-               if(class(info.df[,color.by]) == "factor"){
-                      mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                                  geom_boxplot() + xlab("Covariate") + ylab("") +  
-                                                  theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
-                
-               } else{
+        # color the graph by the covariate with the most significant association
+        color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$Signal.idx == i)])]))
+        mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
+                                            plot.title = paste("Covariate = ",color.by,sep="")) + 
+                                            theme(legend.position ="none")
+        
+        # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
+        # Need to figure out which plot might be most effective
+        
+            if(class(info.df[,color.by]) == "factor"){
                   mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                              geom_point() + xlab("Covariate")  + ylab("") +
-                                              theme(axis.ticks = element_blank(), axis.text.x = element_blank())
-               }
-    
+                                              geom_boxplot() + xlab("Covariate") + ylab("") +  
+                                              theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
+            
+            } else{
+                  mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                          geom_point() + xlab("Covariate")  + ylab("") +
+                                          theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+            }
+            
+
+
           } else if(mclust.obj$G != 1){
           
             # If IC is not correlated to covariate color it using the clustering information obtained from mclust
@@ -273,7 +275,7 @@ for( p in 1:dim(ica.result$A)[1]){
         geneinfo.df <- ica.result$geneinfo[[i]]
         geneinfo.df$length <- geneinfo.df$end_position - geneinfo.df$start_position
         
-        geneinfo.df <- na.omit(data.frame(geneinfo.df,"gene_weight" = abs(ica.test$peaks[[i]][as.character(geneinfo.df$row_ids)])))
+        geneinfo.df <- na.omit(data.frame(geneinfo.df,"gene_weight" = abs(ica.result$peaks[[i]][as.character(geneinfo.df$row_ids)])))
         #Some test data
 
 
