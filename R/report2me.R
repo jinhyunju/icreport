@@ -16,6 +16,7 @@
 #'
 #' @import ggplot2
 #' @import knitr
+#' @import rmarkdown
 #'
 #' @export
 #'

@@ -4,7 +4,7 @@ Version: 0.1
 Authors@R: "Jinhyun Ju <jinhyun.ju@gmail.com> [aut, cre]"
 Description: What the package does (one paragraph)
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.0.0)
 License: What license is it under?
 LazyData: true
 Imports:
@@ -14,3 +14,5 @@ Imports:
     parallel,
     knitr
 VignetteBuilder: knitr
+Suggests:
+    testthat
