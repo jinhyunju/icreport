@@ -12,7 +12,8 @@ Imports:
     ggplot2,
     mclust,
     parallel,
-    knitr
+    knitr,
+	rmarkdown
 VignetteBuilder: knitr
 Suggests:
     testthat
