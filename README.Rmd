@@ -3,6 +3,10 @@ The `icreport` package provides functions that perform independent component ana
 
 ## Quick Start
 
+### Important Note
+
+The report generating feature of this package requires a program called ```pandoc``` version 1.12.3 or higher to be installed. This is not a problem when you are using Rstudio, since Rstudio comes with the required ```pandoc``` functionality. However, if you are running ```icreport``` from good-old-fashioned-R you might run into an error message that pandoc is not installed. In such a case, please review the following link to install the correct version of pandoc on your machine. (https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
+
 ### 1.Loading and Preparing an Example Dataset
 
 If you already know what you want to use the package for, follow this simple example to get started!
@@ -82,11 +86,6 @@ ica_result <- gene_expr_ica(phenotype.mx = expr)
 ```{r ICA report, eval = FALSE}
 report2me(input = ica_result, mode = "ica", prefix = "Test_ICA_Report")
 ```
-
-Troubleshooting if report2me() fails
-
-- report2me() generates an html report using ```knitr``` which depends on ```pandoc```. If you are running this in Rstudio it will most likely work since Rstudio comes with pandoc, but if you are running this on plain R you might have to install pandoc seperately. Here is a link which shows the details for platform specific pandoc installations. https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md
-
 ### 3.Running PCA on the expression dataset. 
 
 3-1) In case you have covariates:
