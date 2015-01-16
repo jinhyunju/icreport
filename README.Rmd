@@ -1,3 +1,4 @@
+
 The `icreport` package provides functions that perform independent component analysis on a given data set and can subsequently generate a compact report. 
 
 ## Quick Start
@@ -82,6 +83,10 @@ ica_result <- gene_expr_ica(phenotype.mx = expr)
 report2me(input = ica_result, mode = "ica", prefix = "Test_ICA_Report")
 ```
 
+Troubleshooting if report2me() fails
+
+- report2me() generates an html report using ```knitr``` which depends on ```pandoc```. If you are running this in Rstudio it will most likely work since Rstudio comes with pandoc, but if you are running this on plain R you might have to install pandoc seperately. Here is a link which shows the details for platform specific pandoc installations. https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md
+
 ### 3.Running PCA on the expression dataset. 
 
 3-1) In case you have covariates:
@@ -110,7 +115,4 @@ pca_result <- gene_expr_pca(phenotype.mx = expr)
 ```{r PCA report, eval = FALSE}
 report2me(input = pca_result, mode = "pca", prefix = "Test_PCA_Report")
 ```
-
-
-
 
