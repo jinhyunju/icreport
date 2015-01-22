@@ -62,7 +62,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       }
 
       # After running ICA sevaral times
-      combined.A <- do.call(rbind, lapply(ica.list, function(x) x$A))
+      #combined.A <- do.call(rbind, lapply(ica.list, function(x) x$A))
       combined.S <- do.call(cbind, lapply(ica.list, function(x) x$S)) # combine all components into a single matrix
       peak.matrix <- do.call(cbind, lapply(ica.list, function(x) x$peak.mx)) # combine all peak position matrices as well
       peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
@@ -83,29 +83,30 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       k.update <- length(multi.component.group)
 
       Avg.S <- matrix(0,nrow = dim(combined.S)[1],ncol = k.update)
-      Avg.A <- matrix(0,nrow = k.update, ncol = dim(combined.A)[2])
+      #Avg.A <- matrix(0,nrow = k.update, ncol = dim(combined.A)[2])
       # for each group calculate the average component
       for(i in 1:length(multi.component.group)){
           group.members <- which(groups %in% multi.component.group[i]) # get component indexes for groups with multiple components
           sub.group.S <- combined.S[,group.members]                # subset matrix for those components
-          sub.group.A <- combined.A[group.members,]
+          #sub.group.A <- combined.A[group.members,]
           group.cor.mx <- cor(sub.group.S)                       # calculate correlation between them
           match.sign <- ifelse(group.cor.mx[,1] < 0, -1,1 )  # in order to average the components signs need to be matched (positive vs negative)
           avg.component <- (sub.group.S %*% match.sign) / length(match.sign) # calculate the mean component
-          avg.mixing <- (match.sign %*% sub.group.A ) / length(match.sign)
+          #avg.mixing <- (match.sign %*% sub.group.A ) / length(match.sign)
 
           Avg.S[,i] <- avg.component
-          Avg.A[i,] <- avg.mixing
+          #Avg.A[i,] <- avg.mixing
       }
+
       hclust.list <- list()
       hclust.list$plot <- h.clust
       hclust.list$cutoff <- h.clust.cutoff
       hclust.list$dist.mx <- dissimilarity
       ica.result$hclust <- hclust.list
       ica.result$S <- Avg.S
-      ica.result$A <- Avg.A
+      ica.result$A <- solve(t(Avg.S) %*% Avg.S) %*% t(Avg.S) %*% phenotype.mx
 
-      rm(Avg.S,Avg.A)
+      rm(Avg.S)
 
     } else if (n.runs ==1){
 
@@ -122,7 +123,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     rownames(ica.result$A) <- paste("IC",c(1:dim(ica.result$A)[1]),sep="")
 
     # Attaching the sample info dataframe to the ica list
-    ica.result$info.df <- info.df
+    ica.result$info.df <- info.df[colnames(phenotype.mx),]
 
     cat("Estimating Number of Peaks in each IC \n")
     ica.result$peaks <- apply(ica.result$S, 2, peak_detection)

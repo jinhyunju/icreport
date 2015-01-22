@@ -127,6 +127,41 @@ report2me(input = pca_result, mode = "pca", prefix = "Test_PCA_Report")
 ```
 
 
+## Interpreting the Results
+
+### 1. Outputs for ICA objects
+
+- Summary Statistics section
+
+- Individual Component Plots 
+
+  1) gene weight plots for components with peaks
+
+  2) gene weight histogram
+  
+  3) IC coefficient plot & coloring
+
+  4) Boxplots / histogram for coefficients
+  
+
+### 2. Outputs for PCA objects 
+
+- Variance plot and PC1 & PC2 projections
+
+  1) Variance plot
+  
+  2) PC projection plots
+  
+- Individual PC plots
+
+  1) Gene weights
+  
+  2) Gene weights histogram
+  
+  3) PC coefficients 
+  
+  4) PC coefficient box plots
+
 ## Introduction
 
 Gene expression analyses with RNA sequencing or microarray produce extremely high dimensional datasets containing approximately 20,000 or more features per sample. Inspecting such large datasets is no easy task. Heatmaps or Principal Component Analysis (PCA) are commonly used for visual representation of the data to reveal any hidden structures. Independent component analysis (ICA) is a method that can give us valuable insight about the hidden structure of the data. 

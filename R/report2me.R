@@ -53,7 +53,7 @@ report2me <- function(input = NULL, mode = "ica", n.comps = NULL, prefix = NULL,
 
         suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
 
-    } else if (how == "pca"){
+    } else if (mode == "pca"){
 
         pca.result <- input
 
