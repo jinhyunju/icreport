@@ -15,8 +15,8 @@
 #' @keywords keywords
 #'
 #' @import ggplot2
-#'         knitr
-#'         rmarkdown
+#' @import knitr
+#' @import rmarkdown
 #'
 #' @export
 #'

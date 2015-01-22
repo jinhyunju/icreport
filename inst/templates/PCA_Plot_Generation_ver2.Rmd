@@ -14,12 +14,11 @@
 # setting global options 
 figure.outpath <- paste(output.path,"/",data.set,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
-
 ```
 
 ```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
 
-update_geom_defaults("bar",list(fill = "black"))
+#update_geom_defaults("bar",list(fill = "black"))
 
 var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
 
