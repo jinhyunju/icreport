@@ -49,11 +49,16 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     if(n.runs >1){
       cat("Running ICA ",n.runs," time(s) on",n.cores," core(s) \n")
       cat(k.est,"Components are estimated in each run \n")
-      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
-                                                               alg.typ = "parallel",method = "R",
-                                                               fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-                                                               alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                                               maxit=500,tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
+      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA_gene_expr(phenotype.mx, k.est,
+                                                               fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
+                                                               alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+                                                               maxit=500, tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
+
+#      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
+#                                                               alg.typ = "parallel",method = "R",
+#                                                               fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
+#                                                               alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+#                                                               maxit=500,tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
 
       for(i in 1:length(ica.list)){
 
@@ -109,16 +114,20 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       rm(Avg.S)
 
     } else if (n.runs ==1){
-
-      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
-                                     alg.typ = "parallel",method = "R",
-                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-                                     alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                     maxit=500,tol = 0.0001, verbose = FALSE)
+      ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
+                                      fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
+                                      alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+                                      maxit=500, tol = 0.0001, verbose = FALSE)
+#      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
+#                                     alg.typ = "parallel",method = "R",
+#                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
+#                                     alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+#                                     maxit=500,tol = 0.0001, verbose = FALSE)
 
     }
 
     rownames(ica.result$S) <- rownames(phenotype.mx)                   # Setting appropriate names for signals and mixing matrix
+    colnames(ica.result$S) <- paste("IC",c(1:dim(ica.result$S)[2]),sep="")
     colnames(ica.result$A) <- colnames(phenotype.mx)
     rownames(ica.result$A) <- paste("IC",c(1:dim(ica.result$A)[1]),sep="")
 
@@ -152,7 +161,9 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     if(!is.null(check.covars)){
         # Anova analysis for covariates vs ICA weights (A matrix)
         ica.result$cov.pval.mx <- component_association_test(ica.result$A,info.df,check.covars)
-        corr.idx <- which(ica.result$cov.pval.mx < cor.threshold, arr.ind = T)
+        # Multiple Hypothesis correction
+        corrected.threshold <- cor.threshold / (dim(ica.result$cov.pval.mx)[1] * dim(ica.result$cov.pval.mx)[2])
+        corr.idx <- which(ica.result$cov.pval.mx < corrected.threshold, arr.ind = T)
     } else{
         corr.idx <- NULL
     }
@@ -177,7 +188,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         sig[correlated.ic] <- 1
     }
 
-    mclust.result <- suppressMessages(apply(ica.result$A, 1, function(x) Mclust(x)))
+    mclust.result <- suppressMessages(apply(ica.result$A, 1, function(x) mclust::Mclust(x)))
 
 
     ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
