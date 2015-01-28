@@ -42,7 +42,7 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     } else {
       pca.result$cov.corr.idx <- NULL     # in case there are no associated covariates
     }
-
+    pca.result$info.df <- info.df
 
     return(pca.result)
 }

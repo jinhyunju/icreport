@@ -23,9 +23,9 @@ opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALS
 var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
 
 
-if(!is.null(info.df)){
+if(!is.null(pca.result$info.df)){
     summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
-                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)), info.df[rownames(pca.result$x),])
+                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)), pca.result$info.df[rownames(pca.result$x),])
      
 } else{
     summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
@@ -88,20 +88,20 @@ for( i in 1:plot.pc){
   mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],"Gene Weight Histogram")
  
  # create a data frame for plotting
- if(!is.null(colnames(pca.result$x)) & !is.null(info.df)){
+ if(!is.null(colnames(pca.result$x)) & !is.null(pca.result$info.df)){
   # create a data frame for plotting
-  coeff.plot.df <- data.frame( as.data.frame( info.df[rownames(pca.result$x),]) ,
+  coeff.plot.df <- data.frame( as.data.frame( pca.result$info.df[rownames(pca.result$x),]) ,
                                "IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]) )
 
   # Setting the colnames to covariate names
-  colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[rownames(pca.result$x),]))[2]] <- colnames(info.df) 
+  colnames(coeff.plot.df)[1:dim(as.data.frame(pca.result$info.df[rownames(pca.result$x),]))[2]] <- colnames(pca.result$info.df) 
   
- } else if (is.null(info.df)) {
+ } else if (is.null(pca.result$info.df)) {
   # If there is no sample information available
   coeff.plot.df <- data.frame("IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
 
  } else {
-   coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
+   coeff.plot.df <- data.frame(as.data.frame(pca.result$info.df),"IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
 
  }
   
