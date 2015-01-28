@@ -169,10 +169,20 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     }
 
     if(length(corr.idx) != 0 ){
-        ica.result$cov.corr.idx <- data.frame("Signal.idx" = corr.idx[,1],                    # which IC is correlated with
-                                              "Covariate.idx" = corr.idx[,2],                 # which covariate
-                                              "Covariate.Name" = check.covars[corr.idx[,2]])  # with the name of
-        rm(corr.idx)
+        correlated.ic <- unique(corr.idx[,1])
+
+        covariate.corr.df <- data.frame(matrix(nrow = length(correlated.ic),ncol = 3))
+        colnames(covariate.corr.df) <- c("Signal.idx","Covariate.idx","Covariate.Name")
+        for( c in 1:length(correlated.ic)){
+            ic.index <- correlated.ic[c]
+            covar.index <- which.min(ica.result$cov.pval.mx[ic.index,])
+            covariate.corr.df[c,"Signal.idx"] <- ic.index
+            covariate.corr.df[c,"Covariate.idx"] <- covar.index
+            covariate.corr.df[c,"Covariate.Name"] <- names(covar.index)
+        }
+        ica.result$cov.corr.idx <- covariate.corr.df
+
+        rm(covariate.corr.df, covar.index, ic.index, c)
     } else {
         ica.result$cov.corr.idx <- NULL     # in case there are no apparent covariates
     }
@@ -184,7 +194,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         correlated.ic <- NULL
     } else{
         sig <- rep(0,k.update)
-        correlated.ic <- unique(ica.result$cov.corr.idx$Signal.idx)
+        #correlated.ic <- unique(ica.result$cov.corr.idx$Signal.idx)
         sig[correlated.ic] <- 1
     }
 

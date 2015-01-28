@@ -13,7 +13,8 @@ update_geom_defaults("bar",list(fill = "black"))
 
 if(!is.null(ica.result$hclust)){
       n.ics <- dim(ica.result$A)[1]
-      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",n.ics,"significant ICs"))
+      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",
+                                                                n.ics,"significant ICs"))
       abline(h=ica.result$hclust$cutoff, col="red", lty=2)
   
 }
@@ -21,16 +22,62 @@ if(!is.null(ica.result$hclust)){
 
 if(!is.null(ica.result$info.df)){
   
+
+    covariates <- unique(ica.result$cov.corr.idx$Covariate.Name)
+    
+    covariate.gene.df <- data.frame(matrix(nrow = length(covariates), ncol = 2))
+    colnames(covariate.gene.df) <- c("Covariate","NumberOfGenes")
+    
+    for( c in 1: length(covariates)){
+        single.covariate <- subset(ica.result$cov.corr.idx, Covariate.Name == covariates[c])
+        ic.index <- single.covariate$Signal.idx
+        if(length(ic.index) > 1){
+            peaks.for.covariate <- sapply(1:length(ic.index), function(x) ica.result$peaks[[ic.index[x]]])
+            peaks.for.covariate <- unlist(peaks.for.covariate)
+            covariate.peaks <- unique(names(peaks.for.covariate))      
+        } else {
+            covariate.peaks <- ica.result$peaks[[ic.index]]
+            
+        }
+        covariate.gene.df[c,1] <- covariates[c]
+        covariate.gene.df[c,2] <- length(covariate.peaks)
+        
+    }
+    
+    
+    ica.result$cov.corr.idx <- within(ica.result$cov.corr.idx, 
+                                      Covariate.Name <- factor(Covariate.Name, 
+                                      levels=names(sort(table(Covariate.Name), 
+                                                        decreasing=TRUE))))
+    
     summary.plots <- list()
-    summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name,col = Covariate.Name)) + geom_bar()
-    summary.plots[[2]] <- ggplot(ica.result$ica.stat.df,aes(x = N.peaks,group = corr.ic)) + 
-                                  geom_bar(aes(fill = corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + xlab("Number of Peaks")
+    
+    if(length(covariates) <10){
+        flower.palette <- c("#283545","#E09E12","#A72613","#E09E12","#95CDDC","#395717","#3A3B35","#D68931","#442243")
+        summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name, fill = Covariate.Name)) + 
+                                geom_bar(col = "black") + scale_fill_manual(values=flower.palette) + ylab("Number of ICs")
+        summary.plots[[2]] <- ggplot(covariate.gene.df,aes(x = Covariate, y = NumberOfGenes,fill = Covariate)) + 
+                                geom_bar(stat = 'identity',col = "black") + 
+                                scale_fill_manual(values=flower.palette) + ylab("Number of Genes")
+    } else {
+        summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name, fill = Covariate.Name)) + 
+                                geom_bar(col = "black") + ylab("Number of ICs")
+        summary.plots[[2]] <- ggplot(covariate.gene.df,aes(x = Covariate, y = NumberOfGenes,fill = Covariate)) + 
+                        geom_bar(stat = 'identity',col = "black") + ylab("Number of Genes")
+
+    }
+    
+    summary.plots[[3]] <- ggplot(ica.result$ica.stat.df,aes(x = N.peaks,group = corr.ic)) + 
+                                  geom_bar(aes(fill = corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + 
+                                  xlab("Number of Peaks") + ylab("Number of ICs")
   
-    summary.plots[[3]] <- ggplot(ica.result$ica.stat.df,aes(x = n.clust,group = corr.ic)) + 
-                                  geom_bar(aes(fill= corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + xlab("Predicted of Clusters")
+    summary.plots[[4]] <- ggplot(ica.result$ica.stat.df,aes(x = n.clust,group = corr.ic)) + 
+                                  geom_bar(aes(fill= corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + 
+                                  xlab("Predicted of Clusters") + ylab("Number of ICs")
   
-    summary.plots[[4]] <- ggplot(ica.result$ica.stat.df,aes(x = percent.var,group = corr.ic)) + 
-                                  geom_bar(aes(fill= corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + xlab("Variance")
+    summary.plots[[5]] <- ggplot(ica.result$ica.stat.df,aes(x = percent.var,group = corr.ic)) + 
+                                  geom_bar(aes(fill= corr.ic)) + scale_fill_manual(values=c("grey50","darkred")) + 
+                                  xlab("Variance(%) Explained") + ylab("Number of ICs")
   
   
     for( p in 1:length(summary.plots)){
@@ -44,7 +91,21 @@ if(!is.null(ica.result$info.df)){
         
     }
     
-  multiplot(plotlist = summary.plots,cols = 2)
+    if(length(covariates) < 5){
+      layout <- matrix(c(1,2,3,3,
+                         4,4,5,5), ncol = 4, byrow = TRUE)
+    } else if (length(covariates) > 5 & length(covariates) < 11){
+      layout <- matrix(c(1,1,2,2,
+                         3,3,4,4,
+                         5,5,0,0), ncol = 4, byrow = TRUE)
+    } else if (length(covariates) > 10){
+      layout <- matrix(c(1,1,1,1,
+                         2,2,2,2,
+                         3,3,4,4,
+                         5,5,0,0), ncol = 4, byrow = TRUE)
+    }
+    
+    multiplot(plotlist = summary.plots,layout = layout)
   
 }
 ```
