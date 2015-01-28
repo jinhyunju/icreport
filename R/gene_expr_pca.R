@@ -24,13 +24,17 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       break;
     }
 
+    cat("Running PCA\n")
     pca.result <- prcomp(t(phenotype.mx))
 
     if(!is.null(check.covars) & !is.null(info.df)){
+      cat("Checking association between covariates and components\n")
       # Anova analysis for covariates vs ICA weights (A matrix)
       pca.result$cov.pval.mx <- component_association_test(t(pca.result$x),info.df,check.covars)
+      cor.threshold <- cor.threshold / (dim(pca.result$cov.pval.mx)[1] * dim(pca.result$cov.pval.mx)[2])
       corr.idx <- which(pca.result$cov.pval.mx < cor.threshold, arr.ind = T)
     } else{
+      cat("No info.df supplied, association test skipped.\n")
       corr.idx <- NULL
     }
 

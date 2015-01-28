@@ -110,8 +110,18 @@ for( i in 1:plot.pc){
       color.by <- names(which.min(pca.result$cov.pval.mx[i, as.character(pca.result$cov.corr.idx$Covariate.Name[which(pca.result$cov.corr.idx$Signal.idx == i)])]))
      mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,plot.title = paste("Covariate = ",color.by,sep="")) + theme(legend.position ="none") + ylab("PC coefficient")
      
-     mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-       geom_boxplot() + xlab("Covariate") + theme(axis.text.x = element_blank()) + ylab("")
+   
+          if(class(pca.result$info.df[,color.by]) == "factor"){
+                mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                            geom_boxplot() + xlab("Covariate") + ylab("") +  
+                                            theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
+          
+          } else{
+                mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                        geom_point() + xlab("Covariate")  + ylab("") +
+                                        theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+          }
+            
     } else if(mclust.obj$G != 1){
     # If IC is not correlated to covariate color it using the clustering information obtained from mclust
 
