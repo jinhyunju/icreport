@@ -25,8 +25,8 @@ if(!is.null(ica.result$info.df)){
 
     covariates <- unique(ica.result$cov.corr.idx$Covariate.Name)
     
-    covariate.gene.df <- data.frame(matrix(nrow = length(covariates), ncol = 2))
-    colnames(covariate.gene.df) <- c("Covariate","NumberOfGenes")
+    covariate.gene.df <- data.frame(matrix(nrow = length(covariates), ncol = 3))
+    colnames(covariate.gene.df) <- c("Covariate","NumberOfGenes","NumberOfICs")
     
     for( c in 1: length(covariates)){
         single.covariate <- subset(ica.result$cov.corr.idx, Covariate.Name == covariates[c])
@@ -41,29 +41,31 @@ if(!is.null(ica.result$info.df)){
         }
         covariate.gene.df[c,1] <- covariates[c]
         covariate.gene.df[c,2] <- length(covariate.peaks)
-        
+        covariate.gene.df[c,3] <- length(ic.index)
     }
     
-    
-    ica.result$cov.corr.idx <- within(ica.result$cov.corr.idx, 
-                                      Covariate.Name <- factor(Covariate.Name, 
-                                      levels=names(sort(table(Covariate.Name), 
-                                                        decreasing=TRUE))))
+    covaraite.gene.df <- covariate.gene.df[order(covariate.gene.df$NumberOfICs, decreasing = TRUE),]
+    covariate.gene.df$Covariate <- factor(covariate.gene.df$Covariate, 
+                                          levels = c(covariate.gene.df$Covariate))
+    #ica.result$cov.corr.idx <- within(ica.result$cov.corr.idx, 
+    #                                  Covariate.Name <- factor(Covariate.Name, 
+    #                                  levels=names(sort(table(Covariate.Name), 
+    #                                                    decreasing=TRUE))))
     
     summary.plots <- list()
     
-    if(length(covariates) <10){
-        flower.palette <- c("#283545","#E09E12","#A72613","#E09E12","#95CDDC","#395717","#3A3B35","#D68931","#442243")
-        summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name, fill = Covariate.Name)) + 
-                                geom_bar(col = "black") + scale_fill_manual(values=flower.palette) + ylab("Number of ICs")
+    if(length(covariates) < 9){
+        flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
+        summary.plots[[1]] <- ggplot(covariate.gene.df,aes(x = Covariate, fill = Covariate, y = NumberOfICs)) + 
+                                geom_bar(stat = 'identity',col = "black", width = .5) + scale_fill_manual(values=flower.palette) + ylab("Number of ICs")
         summary.plots[[2]] <- ggplot(covariate.gene.df,aes(x = Covariate, y = NumberOfGenes,fill = Covariate)) + 
-                                geom_bar(stat = 'identity',col = "black") + 
+                                geom_bar(stat = 'identity',col = "black", width = .5) + 
                                 scale_fill_manual(values=flower.palette) + ylab("Number of Genes")
     } else {
-        summary.plots[[1]] <- ggplot(ica.result$cov.corr.idx,aes(x = Covariate.Name, fill = Covariate.Name)) + 
-                                geom_bar(col = "black") + ylab("Number of ICs")
+        summary.plots[[1]] <- ggplot(covariate.gene.df,aes(x = Covariate, y = NumberOfICs, fill = Covariate)) + 
+                                geom_bar(stat = 'identity',col = "black", width = .5) + ylab("Number of ICs")
         summary.plots[[2]] <- ggplot(covariate.gene.df,aes(x = Covariate, y = NumberOfGenes,fill = Covariate)) + 
-                        geom_bar(stat = 'identity',col = "black") + ylab("Number of Genes")
+                        geom_bar(stat = 'identity',col = "black", width = .5) + ylab("Number of Genes")
 
     }
     
@@ -91,23 +93,25 @@ if(!is.null(ica.result$info.df)){
         
     }
     
-    if(length(covariates) < 5){
-      layout <- matrix(c(1,2,3,3,
-                         4,4,5,5), ncol = 4, byrow = TRUE)
-    } else if (length(covariates) > 5 & length(covariates) < 11){
-      layout <- matrix(c(1,1,2,2,
-                         3,3,4,4,
-                         5,5,0,0), ncol = 4, byrow = TRUE)
-    } else if (length(covariates) > 10){
-      layout <- matrix(c(1,1,1,1,
-                         2,2,2,2,
-                         3,3,4,4,
-                         5,5,0,0), ncol = 4, byrow = TRUE)
-    }
-    
-    multiplot(plotlist = summary.plots,layout = layout)
-  
 }
+```
+
+```{r summary_1row,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 4 }
+if(length(covariates) < 7){
+      multiplot(plotlist = list(summary.plots[[1]],summary.plots[[2]]), cols = 2)
+}
+```
+
+```{r summary_2row,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 6 }
+if(length(covariates) > 6){
+      multiplot(plotlist = list(summary.plots[[1]],summary.plots[[2]]), cols = 1)
+}
+```
+
+```{r summary_plot2,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 4 }
+
+multiplot(plotlist = list(summary.plots[[3]],summary.plots[[4]], summary.plots[[5]]),cols = 3)
+
 ```
 
 ### Individual IC plots 
