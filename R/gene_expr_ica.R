@@ -172,11 +172,11 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         correlated.ic <- unique(corr.idx[,1])
 
         covariate.corr.df <- data.frame(matrix(nrow = length(correlated.ic),ncol = 3))
-        colnames(covariate.corr.df) <- c("Signal.idx","Covariate.idx","Covariate.Name")
+        colnames(covariate.corr.df) <- c("IC","Covariate.idx","Covariate.Name")
         for( c in 1:length(correlated.ic)){
             ic.index <- correlated.ic[c]
             covar.index <- which.min(ica.result$cov.pval.mx[ic.index,])
-            covariate.corr.df[c,"Signal.idx"] <- ic.index
+            covariate.corr.df[c,"IC"] <- ic.index
             covariate.corr.df[c,"Covariate.idx"] <- covar.index
             covariate.corr.df[c,"Covariate.Name"] <- names(covar.index)
         }
@@ -194,7 +194,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         correlated.ic <- NULL
     } else{
         sig <- rep(0,k.update)
-        #correlated.ic <- unique(ica.result$cov.corr.idx$Signal.idx)
+        #correlated.ic <- unique(ica.result$cov.corr.idx$IC)
         sig[correlated.ic] <- 1
     }
 

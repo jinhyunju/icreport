@@ -27,6 +27,9 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     cat("Running PCA\n")
     pca.result <- prcomp(t(phenotype.mx))
 
+
+    pca.result$var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
+
     if(!is.null(check.covars) & !is.null(info.df)){
       cat("Checking association between covariates and components\n")
       # Anova analysis for covariates vs ICA weights (A matrix)
@@ -39,13 +42,27 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     }
 
     if(length(corr.idx) != 0 ){
-      pca.result$cov.corr.idx <- data.frame("Signal.idx" = corr.idx[,1],                    # which IC is correlated with
-                                            "Covariate.idx" = corr.idx[,2],                 # which covariate
-                                            "Covariate.Name" = check.covars[corr.idx[,2]])  # with the name of
-      rm(corr.idx)
+      correlated.pc <- unique(corr.idx[,1])
+
+      covariate.corr.df <- data.frame(matrix(nrow = length(correlated.pc),ncol = 3))
+      colnames(covariate.corr.df) <- c("PC","Covariate.idx","Covariate.Name")
+      for( c in 1:length(correlated.pc)){
+        pc.index <- correlated.pc[c]
+        covar.index <- which.min(pca.result$cov.pval.mx[pc.index,])
+        covariate.corr.df[c,"PC"] <- pc.index
+        covariate.corr.df[c,"Covariate.idx"] <- covar.index
+        covariate.corr.df[c,"Covariate.Name"] <- names(covar.index)
+      }
+
+      pca.result$cov.corr.idx <- covariate.corr.df
+      pca.result$cov.corr.idx$var <- var.percent[pca.result$cov.corr.idx$PC]
+
+      rm(covariate.corr.df, covar.index, pc.index, c)
     } else {
       pca.result$cov.corr.idx <- NULL     # in case there are no associated covariates
     }
+
+
     pca.result$info.df <- info.df
 
     return(pca.result)

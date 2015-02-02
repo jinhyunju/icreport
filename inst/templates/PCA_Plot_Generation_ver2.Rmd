@@ -16,30 +16,28 @@ figure.outpath <- paste(output.path,"/",data.set,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
-```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
-
+```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 8 }
+flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
 #update_geom_defaults("bar",list(fill = "black"))
-
-var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
-
-
 if(!is.null(pca.result$info.df)){
     summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
-                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)), pca.result$info.df[rownames(pca.result$x),])
+                             "VarPercent" = pca.result$var.percent, "idx" = c(1:length(pca.result$var.percent)), pca.result$info.df[rownames(pca.result$x),])
      
 } else{
     summary.pca.df <- data.frame("PC1" = pca.result$x[,1],"PC2" = pca.result$x[,2],
-                             "VarPercent" = var.percent, "idx" = c(1:length(var.percent)))
+                             "VarPercent" = pca.result$var.percent, "idx" = c(1:length(pca.result$var.percent)))
 
 }
 
 summary.plots <- list()
 
+# scree of variance explained by each PC
 summary.plots[[1]] <- ggplot(summary.pca.df, aes(x = idx, y = VarPercent)) + geom_line() +
                             xlab("PC index") + ylab("Variance Explained") + 
                             labs(title ="Variance by Component")
 
-if(1 %in% pca.result$cov.corr.idx$Signal.idx){
+# check if PC 1 is correlated with any covariates and if so use the color to plot PC1 vs PC2
+if(1 %in% pca.result$cov.corr.idx$PC){
     most.significant.corr <- which.min(pca.result$cov.pval.mx[1,])
     color.by <- names(most.significant.corr)
     summary.plots[[2]] <- ggplot(summary.pca.df, aes_string(x = "PC1", y = "PC2", col = color.by)) + geom_point(size = 3) +
@@ -49,6 +47,31 @@ if(1 %in% pca.result$cov.corr.idx$Signal.idx){
     summary.plots[[2]] <- ggplot(summary.pca.df, aes(x = PC1, y = PC2)) + geom_point(size = 3) +
                             xlab("PC1") + ylab("PC2")
 }
+
+
+
+# under construction
+if(!is.null(pca.result$cov.corr.idx)){
+    if(length(unique(pca.result$cov.corr.idx$Covariate.Name)) < 8){
+        summary.plots[[3]] <- ggplot(pca.result$cov.corr.idx, 
+                                     aes(x = Covariate.Name, fill = Covariate.Name)) + 
+                                     geom_bar() + scale_fill_manual(values = flower.palette)
+        
+        summary.plots[[4]] <- ggplot(pca.result$cov.corr.idx, aes(x = Covariate.Name, y = var, fill = Covariate.Name)) +
+                                     geom_bar(stat = 'identity') + 
+                                     scale_fill_manual(values = flower.palette)  
+    } else {
+       summary.plots[[3]] <- ggplot(pca.result$cov.corr.idx, 
+                                     aes(x = Covariate.Name, fill = Covariate.Name)) + 
+                                     geom_bar() 
+       
+       summary.plots[[4]] <- ggplot(pca.result$cov.corr.idx, aes(x = Covariate.Name, y = var, fill = Covariate.Name)) +
+                                     geom_bar(stat = 'identity') 
+    }
+
+}
+
+
 
 
 for( p in 1:length(summary.plots)){
@@ -63,7 +86,9 @@ for( p in 1:length(summary.plots)){
   
 }
 
-multiplot(plotlist = summary.plots,cols = 2)
+layout <- matrix(c(1,2,3,4), nrow = 2, byrow = TRUE)
+
+multiplot(plotlist = summary.plots,layout = layout)
   
 ```
 
@@ -106,8 +131,8 @@ for( i in 1:plot.pc){
  }
   
  # If IC is correlated to a covariate color the pot accordingly
-    if(i %in% unique(pca.result$cov.corr.idx$Signal.idx)){
-      color.by <- names(which.min(pca.result$cov.pval.mx[i, as.character(pca.result$cov.corr.idx$Covariate.Name[which(pca.result$cov.corr.idx$Signal.idx == i)])]))
+    if(i %in% unique(pca.result$cov.corr.idx$PC)){
+      color.by <- names(which.min(pca.result$cov.pval.mx[i, as.character(pca.result$cov.corr.idx$Covariate.Name[which(pca.result$cov.corr.idx$PC == i)])]))
      mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,plot.title = paste("Covariate = ",color.by,sep="")) + theme(legend.position ="none") + ylab("PC coefficient")
      
    
@@ -164,12 +189,12 @@ for( i in 1:plot.pc){
 
   
   cat("-------------------------------------------------------------------------------------------------------------------","\n")
-  if (i %in% unique(pca.result$cov.corr.idx$Signal.idx)){
+  if (i %in% unique(pca.result$cov.corr.idx$PC)){
     cat("PC # ",i," Correlation with covariate ", color.by," P-value = ",pca.result$cov.pval.mx[i,color.by],"\n")  
-    cat("Variance explained (%) = ", var.percent[i], "\n")
+    cat("Variance explained (%) = ", pca.result$var.percent[i], "\n")
   } else {
     cat("PC # ",i," No correlation with covariates ","\n")
-    cat("Variance explained (%) = ", var.percent[i], "\n")
+    cat("Variance explained (%) = ", pca.result$var.percent[i], "\n")
   }
  cat("-------------------------------------------------------------------------------------------------------------------","\n")
 

@@ -30,7 +30,7 @@ if(!is.null(ica.result$info.df)){
     
     for( c in 1: length(covariates)){
         single.covariate <- subset(ica.result$cov.corr.idx, Covariate.Name == covariates[c])
-        ic.index <- single.covariate$Signal.idx
+        ic.index <- single.covariate$IC
         if(length(ic.index) > 1){
             peaks.for.covariate <- sapply(1:length(ic.index), function(x) ica.result$peaks[[ic.index[x]]])
             peaks.for.covariate <- unlist(peaks.for.covariate)
@@ -54,7 +54,7 @@ if(!is.null(ica.result$info.df)){
     
     summary.plots <- list()
     
-    if(length(covariates) < 9){
+    if(length(covariates) < 8){
         flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
         summary.plots[[1]] <- ggplot(covariate.gene.df,aes(x = Covariate, fill = Covariate, y = NumberOfICs)) + 
                                 geom_bar(stat = 'identity',col = "black", width = .5) + scale_fill_manual(values=flower.palette) + ylab("Number of ICs")
@@ -173,10 +173,10 @@ for( p in 1:dim(ica.result$A)[1]){
         }
         
        # If IC is correlated to a covariate color the pot accordingly
-        if(i %in% unique(ica.result$cov.corr.idx$Signal.idx)){
+        if(i %in% unique(ica.result$cov.corr.idx$IC)){
           
         # color the graph by the covariate with the most significant association
-        color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$Signal.idx == i)])]))
+        color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
         mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
                                             plot.title = paste("Covariate = ",color.by,sep="")) + 
                                             theme(legend.position ="none")
@@ -243,7 +243,7 @@ for( p in 1:dim(ica.result$A)[1]){
         }
         
         cat("--------------------------------------------------------------------------------------------------------------","\n")
-        if (i %in% unique(ica.result$cov.corr.idx$Signal.idx)){
+        if (i %in% unique(ica.result$cov.corr.idx$IC)){
             cat("IC # ",i," Correlation with covariate ", color.by,
                 "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")    
             
@@ -303,10 +303,10 @@ for( p in 1:dim(ica.result$A)[1]){
         }
         
        # If IC is correlated to a covariate color the pot accordingly
-        if(i %in% unique(ica.result$cov.corr.idx$Signal.idx)){
+        if(i %in% unique(ica.result$cov.corr.idx$IC)){
           
             # color the graph by the covariate with the most significant association
-            color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$Signal.idx == i)])]))
+            color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
            mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
                                                     plot.title = paste("Covariate = ",color.by,sep=""))
            
@@ -341,8 +341,6 @@ for( p in 1:dim(ica.result$A)[1]){
         geneinfo.df$length <- geneinfo.df$end_position - geneinfo.df$start_position
         
         geneinfo.df <- na.omit(data.frame(geneinfo.df,"gene_weight" = abs(ica.result$peaks[[i]][as.character(geneinfo.df$row_ids)])))
-        #Some test data
-
 
         # chromosome summary plot
         mclust.plots[[3]] <- ggplot(geneinfo.df, aes(x = chromosome_name, fill = chromosome_name, y = gene_weight)) + geom_bar(stat = "identity") + 
@@ -378,7 +376,7 @@ for( p in 1:dim(ica.result$A)[1]){
         }
         mclust.plots[[4]] <- mclust.plots[[4]] + theme(axis.text = element_text(size = 6))
         cat("--------------------------------------------------------------------------------------------------------------","\n")
-        if (i %in% unique(ica.result$cov.corr.idx$Signal.idx)){
+        if (i %in% unique(ica.result$cov.corr.idx$IC)){
             cat("IC # ",i," Correlation with covariate ", color.by,
                 "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")    
             
