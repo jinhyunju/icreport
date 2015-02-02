@@ -16,7 +16,7 @@ figure.outpath <- paste(output.path,"/",data.set,"_figures/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 
-```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 8 }
+```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 5 }
 flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
 #update_geom_defaults("bar",list(fill = "black"))
 if(!is.null(pca.result$info.df)){
@@ -86,10 +86,20 @@ for( p in 1:length(summary.plots)){
   
 }
 
-layout <- matrix(c(1,2,3,4), nrow = 2, byrow = TRUE)
 
-multiplot(plotlist = summary.plots,layout = layout)
+multiplot(plotlist = list(summary.plots[[1]], summary.plots[[2]]),cols = 2)
   
+```
+
+
+```{r Covariate_correlation_summary2,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 5 }
+
+if(length(summary.plots) > 2){
+  
+  multiplot(plotlist = list(summary.plots[[3]], summary.plots[[4]]),cols = 2)
+
+}
+
 ```
 
 ### Individual Principal Components 

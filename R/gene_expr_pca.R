@@ -55,7 +55,7 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       }
 
       pca.result$cov.corr.idx <- covariate.corr.df
-      pca.result$cov.corr.idx$var <- var.percent[pca.result$cov.corr.idx$PC]
+      pca.result$cov.corr.idx$var <- pca.result$var.percent[pca.result$cov.corr.idx$PC]
 
       rm(covariate.corr.df, covar.index, pc.index, c)
     } else {
