@@ -2,7 +2,7 @@
 
 ```{r global_options, include=FALSE}
 # setting global options 
-figure.outpath <- paste(output.path,"/knitr_figures/",prefix,"_figures/",sep="")
+figure.outpath <- paste(output.path,"/icreport_figures/",prefix,"/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 ```
 

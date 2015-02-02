@@ -3,7 +3,6 @@
 #' Generating a HTML report from a ICA or PCA list object.
 #'
 #' @param input ICA or PCA result list created by either \code{gene_expr_ica()} or \code{gene_expr_pca()}.
-#' @param mode Specifying whether the object is a "ica" object or "pca" object. Default is set to "ica".
 #' @param n.comps Number of principal components to plot. Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.
 #' @param prefix Output filename prefix. The output file will be named
 #'        "prefix_ICA_summary.html".
@@ -22,7 +21,7 @@
 #'
 #' @examples
 #' R code here showing how your function works
-report2me <- function(input = NULL, mode = "ica", n.comps = NULL, prefix = NULL, output.path = NULL, file.ext = "png"){
+report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path = NULL, file.ext = "png"){
 
     if(!exists("input")){
       cat("Please specify the input to generate a report. \n")
@@ -40,8 +39,8 @@ report2me <- function(input = NULL, mode = "ica", n.comps = NULL, prefix = NULL,
 
     }
 
-
-    if( mode == "ica"){
+    method <- attr(input, 'method')
+    if( method == "ica"){
 
         ica.result <- input
         info.df <- ica.result$info.df
@@ -53,7 +52,7 @@ report2me <- function(input = NULL, mode = "ica", n.comps = NULL, prefix = NULL,
 
         suppressMessages(rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document"))
 
-    } else if (mode == "pca"){
+    } else if (method == "pca"){
 
         pca.result <- input
 

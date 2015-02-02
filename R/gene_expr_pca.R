@@ -64,6 +64,6 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
     pca.result$info.df <- info.df
-
+    attr(pca.result, 'method') <- "pca"
     return(pca.result)
 }
