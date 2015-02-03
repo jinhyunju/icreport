@@ -86,7 +86,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       multi.component.group <- which(group.table > (n.runs * 0.6)) # get groups with more than 2 members
 
       k.update <- length(multi.component.group)
-
+      cat(k.update,"Replicating Components Estimated \n")
       Avg.S <- matrix(0,nrow = dim(combined.S)[1],ncol = k.update)
       #Avg.A <- matrix(0,nrow = k.update, ncol = dim(combined.A)[2])
       # for each group calculate the average component
