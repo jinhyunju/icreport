@@ -159,9 +159,14 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     ica.result$order <- order(percent.var,decreasing = T) # ordering the ICs based on the amount of variance they explain
     ica.result$percent.var <- percent.var
 
+    if(!is.null(info.df) & is.null(check.covars)){
+        cat("Sample info detected but missing check.covars \n")
+        cat("Using column names of info.df as check.covars \n")
+        check.covars <- colnames(info.df)
+    }
 
     # Checking correlation between IC coefficients and measured covariates
-    if(!is.null(check.covars)){
+    if(!is.null(check.covars) & !is.null(info.df)){
         # Anova analysis for covariates vs ICA weights (A matrix)
         ica.result$cov.pval.mx <- component_association_test(ica.result$A,info.df,check.covars)
         # Multiple Hypothesis correction
