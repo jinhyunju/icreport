@@ -22,7 +22,7 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 2) Installing and loading an example dataset using the package GEOquery.
 
 - Here we are going to use a public dataset that is available on the Gene Expression Omnibus (GEO), using the package GEOquery.
-(Thanks to Adrian Ewald)
+
 
 - You can use your own dataset, it just needs to be a matrix which has the dimension of (gene x samples). A dataframe with covariate information is optional with dimensions (samples x covariates). 
 
@@ -120,3 +120,6 @@ pca_result <- gene_expr_pca(phenotype.mx = expr)
 ```{r PCA report, eval = FALSE}
 report2me(input = pca_result, prefix = "Test_PCA_Report")
 ```
+
+
+Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian for testing and feedback. 
