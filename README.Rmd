@@ -5,7 +5,7 @@ The `icreport` package provides functions that perform independent component ana
 
 ### Important Note
 
-The report generating feature of this package requires a program called ```pandoc``` version 1.12.3 or higher to be installed. This is not a problem when you are using Rstudio, since Rstudio comes with the required ```pandoc``` functionality. However, if you are running ```icreport``` from good-old-fashioned-R you might run into an error message that pandoc is not installed. In such a case, please review the following link to install the correct version of pandoc on your machine. (https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
+The report generating feature of this package requires a program called ```pandoc``` version 1.12.3 or higher to be installed. This is not a problem when you are using the most recent version of Rstudio (0.98.1102 at the moment - 2 March 2015), since it comes with the required ```pandoc``` functionality. However, if you are running ```icreport``` from good-old-fashioned-R you might run into an error message that pandoc is not installed. In such a case, please review the following link to install the correct version of pandoc on your machine. (https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md)
 
 ### 1.Loading and Preparing an Example Dataset
 
@@ -27,8 +27,10 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 - You can use your own dataset, it just needs to be a matrix which has the dimension of (gene x samples). A dataframe with covariate information is optional with dimensions (samples x covariates). 
 
 ```{r Install datasets, eval = FALSE}
-install.packages("GEOquery")        # install the GEOquery package
+source("http://bioconductor.org/biocLite.R")    # install the GEOquery package
+biocLite("GEOquery")        
 gse60028 <- GEOquery::getGEO(GEO = "GSE60028")  # get the GEO data 
+                                                # (this may take a few minutes depending on your network connection)
 geo.eset <- gse60028$GSE60028_series_matrix.txt.gz # extract the expression set
 
 expr <- exprs(geo.eset)       # extract the expression matrix
@@ -68,6 +70,7 @@ ica_result <- gene_expr_ica(phenotype.mx = expr,
                             info.df = sample.info,
                             check.covars = colnames(sample.info))
 
+# This may also take a few minutes depending on the size of your dataset. 
 ```
 
 2-3) In case you don't have any covariates:
@@ -122,4 +125,4 @@ report2me(input = pca_result, prefix = "Test_PCA_Report")
 ```
 
 
-Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian for testing and feedback. 
+Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian, and Jason for testing and feedback. 

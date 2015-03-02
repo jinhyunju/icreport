@@ -52,7 +52,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA_gene_expr(phenotype.mx, k.est,
                                                                fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                                                alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                                               maxit=500, tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
+                                                               maxit=500, tol = 0.0001, verbose = TRUE), mc.cores = n.cores)
 
 #      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
 #                                                               alg.typ = "parallel",method = "R",
@@ -120,7 +120,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
                                       fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                       alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                      maxit=500, tol = 0.0001, verbose = FALSE)
+                                      maxit=500, tol = 0.0001, verbose = TRUE)
 #      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
 #                                     alg.typ = "parallel",method = "R",
 #                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
@@ -206,8 +206,11 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         sig[correlated.ic] <- 1
     }
 
-    mclust.result <- suppressMessages(apply(ica.result$A, 1, function(x) mclust::Mclust(x)))
-
+    # Turn off warnings to prevent unneccessary panic
+    options(warn=-1)
+    mclust.result <- apply(ica.result$A, 1, function(x) mclust::Mclust(x))
+    # Turn warnings back on to prevent disasters
+    options(warn=0)
 
     ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
                                          "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters

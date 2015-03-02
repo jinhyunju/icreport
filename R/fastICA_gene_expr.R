@@ -14,7 +14,7 @@
 #' @examples
 #' R code here showing how your function works
 fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
-                             scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = FALSE, w.init=NULL) {
+                             scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE, w.init=NULL) {
     dd <- dim(X)       # dimensions g x N
     d <- dd[dd != 1L]
     if (length(d) != 2L)

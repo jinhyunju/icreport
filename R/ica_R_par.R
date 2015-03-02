@@ -24,7 +24,7 @@ ica_R_par <- function (X, n.comp, tol, fun, alpha, maxit, verbose, w.init) {
   it <- 1
   if (fun == "logcosh") {
     if (verbose)
-      message("Symmetric FastICA using logcosh approx. to neg-entropy function")
+      message("Symmetric FastICA using logcosh approx. to neg-entropy function \n")
     while (lim[it] > tol && it < maxit) {
       wx <- W %*% X
       gwx <- tanh(alpha * wx)
@@ -37,13 +37,13 @@ ica_R_par <- function (X, n.comp, tol, fun, alpha, maxit, verbose, w.init) {
       lim[it + 1] <- max(Mod(Mod(diag(W1 %*% t(W))) - 1))
       W <- W1
       if (verbose)
-        message("Iteration ", it, " tol = ", format(lim[it + 1]))
+        cat("\r Iteration ", it, " tol = ", format(lim[it + 1]))
       it <- it + 1
     }
   }
   if (fun == "exp") {
     if (verbose)
-      message("Symmetric FastICA using exponential approx. to neg-entropy function")
+      message("Symmetric FastICA using exponential approx. to neg-entropy function \n")
     while (lim[it] > tol && it < maxit) {
       wx <- W %*% X
       gwx <- wx * exp(-(wx^2)/2)
@@ -55,8 +55,10 @@ ica_R_par <- function (X, n.comp, tol, fun, alpha, maxit, verbose, w.init) {
       W1 <- sW1$u %*% Diag(1/sW1$d) %*% t(sW1$u) %*% W1
       lim[it + 1] <- max(Mod(Mod(diag(W1 %*% t(W))) - 1))
       W <- W1
-      if (verbose)
-        message("Iteration ", it, " tol = ", format(lim[it + 1]))
+      if (verbose){
+        cat("Iteration ", it, " tol = ", format(lim[it + 1]),"\r")
+      }
+
       it <- it + 1
     }
   }
