@@ -25,23 +25,23 @@ pre_process_data <- function(phenotype.mx, scale.pheno = TRUE){
 
     # Remove 0 variance genes if existing
     if(var0.count != 0){
-        cat("Removing ",var0.count," 0 variance genes \n")
+        message("- Removing ",var0.count," 0 variance genes \n")
         phenotype.mx <- phenotype.mx[-c(which(var.vec == 0)),]
     } else {
-        cat("No 0 variance genes in dataset \n")
+        message("- No 0 variance genes in dataset \n")
     }
 
 
     if(scale.pheno == TRUE){
-        cat("Centering and Scaling Phenotype Matrix \n")
+        message("- Centering and Scaling Phenotype Matrix \n")
         # scale phenotype matrix to have 0 mean and 1 sd
         phenotype.mx <- t(apply(phenotype.mx, 1, function(x) (x - mean(x))/sd(x)))
     } else {
-        cat("Centering Phenotype Matrix \n")
+        message("- Centering Phenotype Matrix \n")
         phenotype.mx <- t(apply(phenotype.mx, 1, function(x) (x - mean(x))))
     }
 
-    cat("Dimension of Phenotype Matrix = [",dim(phenotype.mx)[1],dim(phenotype.mx)[2],"]\n")
+    message("- Dimension of Phenotype Matrix = [",dim(phenotype.mx)[1],",",dim(phenotype.mx)[2],"]\n")
     return(phenotype.mx)
 }
 

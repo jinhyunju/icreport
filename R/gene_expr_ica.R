@@ -26,13 +26,14 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
                     n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05, ...){
 
     if(is.null(phenotype.mx)){
-        cat("Error: Phenotype matrix is missing \n")
+        message("Error: Phenotype matrix is missing \n")
         break;
     }
 
     if(is.null(n.cores)){
         n.cores = 1
     }
+    message("------ Pre-processing Data ------- \n")
     # removing 0 variance genes and scaling and centering the phenotype matirx
     phenotype.mx <- pre_process_data(phenotype.mx, scale.pheno = scale.pheno)
 
@@ -46,13 +47,16 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     ica.list <- list()
     ica.result <- list()
 
+
+    message("------ Running ICA ------- \n")
+    message("* This may take some time depending on the size of your dataset \n")
     if(n.runs >1){
-      cat("Running ICA ",n.runs," time(s) on",n.cores," core(s) \n")
-      cat(k.est,"Components are estimated in each run \n")
+      message("- Generating ",n.runs," replicates using ",n.cores," core(s): ",k.est," Components are estimated in each run\n")
+
       ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA_gene_expr(phenotype.mx, k.est,
                                                                fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                                                alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                                               maxit=500, tol = 0.0001, verbose = TRUE), mc.cores = n.cores)
+                                                               maxit=500, tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
 
 #      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
 #                                                               alg.typ = "parallel",method = "R",
@@ -86,7 +90,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       multi.component.group <- which(group.table > (n.runs * 0.6)) # get groups with more than 2 members
 
       k.update <- length(multi.component.group)
-      cat(k.update,"Replicating Components Estimated \n")
+      message("- ",k.update," Replicating Components Estimated \n")
       if(k.update < 1){
         stop('None of the ICs replicated. You could try to the increase sample size or n.runs. \n')
       }
@@ -136,13 +140,13 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
     # Attaching the sample info dataframe to the ica list
     ica.result$info.df <- info.df[colnames(phenotype.mx),]
-
-    cat("Estimating Number of Peaks in each IC \n")
+    message("------ Post-ICA Processing ------- \n")
+    message("- Labeling peak genes in each IC \n")
     ica.result$peaks <- apply(ica.result$S, 2, peak_detection)
     # peaks are defined as gene contributions that are larger than 2 standard deviations
     ica.result$peak.mx <- apply(ica.result$S, 2, function(x) 1*(abs(x) > 2*sd(x)))
 
-    cat("Calculating Variance Explained by each IC \n")
+    message("- Calculating variance explained by each IC \n")
     # get the total variance by the sums of squares of the scaled phenotype.mx
     total.var <- sum(phenotype.mx^2)
 
@@ -153,20 +157,21 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     # % variance explained by each IC
     percent.var <- (var.IC / total.var) * 100
 
-    cat("Sanity Check : Total % of variance explained by",k.update,"ICs = ", sum(percent.var), "\n")
+    message("- Sanity Check : Total % of variance explained by ",k.update," ICs = ", sum(percent.var), "\n")
 
-    cat("Creating index based on Variance explained \n")
+    message("- Creating index based on Variance explained \n")
     ica.result$order <- order(percent.var,decreasing = T) # ordering the ICs based on the amount of variance they explain
     ica.result$percent.var <- percent.var
 
     if(!is.null(info.df) & is.null(check.covars)){
-        cat("Sample info detected but missing check.covars \n")
-        cat("Using column names of info.df as check.covars \n")
+        message("- Sample info detected but missing check.covars \n")
+        message("- Using column names of info.df as check.covars \n")
         check.covars <- colnames(info.df)
     }
 
     # Checking correlation between IC coefficients and measured covariates
     if(!is.null(check.covars) & !is.null(info.df)){
+        message("- Checking associations between ICs and covariates \n")
         # Anova analysis for covariates vs ICA weights (A matrix)
         ica.result$cov.pval.mx <- component_association_test(ica.result$A,info.df,check.covars)
         # Multiple Hypothesis correction
@@ -226,9 +231,9 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
     hf.vec.names <-paste("IC",hf.vec,sep="")
     # name the ICs as IC#
-
-    cat("ICs marked as confounding factors = \n")
-    print(hf.vec.names)
+    n.hf <- length(hf.vec.names)
+    message("- ",n.hf," out of ",k.update," ICs marked as confounding factors = \n")
+    cat(hf.vec.names,"\n\n")
 
     # Creating a matrix indicating which genes are influenced by a given IC
     ica.result$ica.confeti.mx <- matrix(0,nrow = dim(ica.result$S)[1], ncol = length(hf.vec))
@@ -237,13 +242,14 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     # column names = correlated ICs + multi cluster ICs
     colnames(ica.result$ica.confeti.mx) <- hf.vec.names
 
-    cat("Creating CONFETI matrix for regression \n")
+    #message("Creating CONFETI matrix for regression \n")
     for ( i in 1:length(hf.vec)){
         k <- hf.vec[i]
         ic.name <- hf.vec.names[i]
         peak.temp <- names(ica.result$peaks[[k]])
         ica.result$ica.confeti.mx[peak.temp,ic.name] <- 1
     }
+    message("------ Process completed without any interuptions ------- =) \n")
     attr(ica.result, 'method') <- "ica"
     return(ica.result)
 }

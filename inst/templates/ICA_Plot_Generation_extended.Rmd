@@ -144,13 +144,13 @@ for( p in 1:dim(ica.result$A)[1]){
        # Plot IC loading with peaks labeled in red (If peaks are available)
         if(!is.null(ica.result$peaks)){
             # If the peaks are labeled use them 
-            mclust.plots[[1]] <- plot_component(ica.result$S[,i],peaks = TRUE, 
+            mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
                                                 peakresult = ica.result$peaks[[i]], 
                                                 gene.names = rownames(ica.result$S),
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
         } else {
             # If no peak labeling is available color them in black
-            mclust.plots[[1]] <- plot_component(ica.result$S[,i],
+            mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
        
         }
@@ -164,7 +164,7 @@ for( p in 1:dim(ica.result$A)[1]){
             # Dataframe that will go into ggplot for plotting with IC coefficients in IC and idx as sample index
             coeff.plot.df <- data.frame(as.data.frame(info.df[colnames(ica.result$A),]),
                                         "IC" = ica.result$A[i,],
-                                        "idx"=c(1:dim(ica.result$A)[2]))
+                                        "idx"= c(1:dim(ica.result$A)[2]))
             
             # Setting the colnames to covariate names
             colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[colnames(ica.result$A),]))[2]] <- colnames(info.df) 
@@ -239,10 +239,10 @@ for( p in 1:dim(ica.result$A)[1]){
         
         for( k in 1:length(mclust.plots)){
             mclust.plots[[k]] <- mclust.plots[[k]] +theme(axis.text = element_text(size=12), 
-                axis.title=element_text(size=14,face="bold"), 
-                title = element_text(size=16,face="bold"),
-                legend.title = element_text(size=10, face="bold"),
-                legend.text = element_text(size = 8),
+                axis.title=element_text(size=10,face="bold"), 
+                title = element_text(size=12,face="bold"),
+                legend.title = element_text(size=8, face="bold"),
+                legend.text = element_text(size = 6),
                 legend.key = element_rect(fill = NA,color = "white"),
                 panel.grid.major = element_line(colour = "grey80", linetype="dashed"),
                 panel.background = element_rect(fill = NA,color = "grey80")) 
@@ -253,10 +253,14 @@ for( p in 1:dim(ica.result$A)[1]){
         if (i %in% unique(ica.result$cov.corr.idx$IC)){
             cat("IC # ",i," Correlation with covariate ", color.by,
                 "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")    
-            
+            cat("Top 10 Gene Weights \n")
+            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
         } else {
             cat("IC # ",i," No correlation with covariates / Variance (%) = ",ica.result$percent.var[i],"\n")
-            
+            cat("Top 10 Gene Weights \n")
+            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ", sep ="  "), "\n")
         }
         cat("--------------------------------------------------------------------------------------------------------------","\n")
       
@@ -277,13 +281,13 @@ for( p in 1:dim(ica.result$A)[1]){
        # Plot IC loading with peaks labeled in red (If peaks are available)
         if(!is.null(ica.result$peaks)){
             # If the peaks are labeled use them 
-            mclust.plots[[1]] <- plot_component(ica.result$S[,i],peaks = TRUE, 
+            mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
                                                 peakresult = ica.result$peaks[[i]], 
                                                 gene.names = rownames(ica.result$S),
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
         } else {
             # If no peak labeling is available color them in black
-            mclust.plots[[1]] <- plot_component(ica.result$S[,i],
+            mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
                                                 plot.title = paste(data.set,"_IC#_",i,sep =""))    
        
         }
@@ -386,10 +390,12 @@ for( p in 1:dim(ica.result$A)[1]){
         if (i %in% unique(ica.result$cov.corr.idx$IC)){
             cat("IC # ",i," Correlation with covariate ", color.by,
                 "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")    
-            
+            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
         } else {
             cat("IC # ",i," No correlation with covariates / Variance (%) = ",ica.result$percent.var[i],"\n")
-            
+            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
         }
         cat("--------------------------------------------------------------------------------------------------------------","\n")
       

@@ -24,17 +24,15 @@
 report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path = NULL, file.ext = "png"){
 
     if(!exists("input")){
-      cat("Please specify the input to generate a report. \n")
-      break;
+        stop("Please specify the input to generate a report. \n")
     }
 
     if(!exists("prefix")){
-        cat("Please specify the prefix of the output file \n")
-        break;
+        stop("Please specify the prefix of the output file \n")
     }
 
     if(is.null(output.path)){
-        cat("Output path is not specified, using current working directory \n")
+        message("Output path is not specified, using current working directory \n")
         output.path <- getwd()
 
     }

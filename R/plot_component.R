@@ -12,10 +12,11 @@
 #'
 #' @examples
 #' R code here showing how your function works
-plot_component <- function(s,plot.title,peaks = FALSE, peakresult = NULL, gene.names = NULL){
+plot_component <- function(s, plot.title, peaks = FALSE, peakresult = NULL, gene.names = NULL){
   if(peaks == FALSE){
     G <- length(s)
-    plot.sig <- data.frame(idx = seq(1,G,1), sig = s)
+    #plot.sig <- data.frame(idx = seq(1,G,1), sig = s)
+    plot.sig <- data.frame(idx = rank(-abs(s), ties.method = "first"), sig = s)
     p <- ggplot(plot.sig, aes(x=idx, y= sig)) +
       geom_linerange(aes(ymin=0, ymax=sig)) +
       xlab("Gene index") +
@@ -23,13 +24,15 @@ plot_component <- function(s,plot.title,peaks = FALSE, peakresult = NULL, gene.n
     return(p)
   } else {
     G <- length(s)
+    colnames(s) <- "sig"
     significant.peaks <- names(peakresult)
     n.peaks <- length(peakresult)
     peak.idx <- 1 * (gene.names %in% significant.peaks)
-    plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
+    #plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
+    plot.sig <- data.frame(idx = rank(-abs(s), ties.method = "first"), sig = s, peaks = peak.idx)
     plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
-    p <- ggplot(plot.sig, aes(x=idx, y= sig)) + geom_linerange(aes(ymin=0, ymax=sig,colour = factor(peaks))) +
-      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) + xlab("Gene index") + ylab("Gene Weights")+
+    p <- ggplot(plot.sig, aes(x=idx, y= sig)) + geom_linerange(aes(ymin=0, ymax=sig, colour = factor(peaks))) +
+      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) + xlab("Genes sorted by weights") + ylab("Gene Weights")+
       labs(title = plot.title) +theme(legend.position="none")
     return(p)
   }

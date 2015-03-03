@@ -4,7 +4,7 @@
 \title{ICA analysis based on the package fastICA}
 \usage{
 fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
-  scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = FALSE,
+  scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE,
   w.init = NULL)
 }
 \arguments{
