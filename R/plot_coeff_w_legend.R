@@ -2,8 +2,8 @@
 #'
 #' ggplot function for plotting coefficients for a single IC
 #'
-#' @param s A single component  \code{s}
-#' @param plot.title Character title of the plot\code{plot.title}
+#' @param info_input A dataframe that has the index and values of ICs with covariate information saved.
+#' @param k.col The column name to use for plot coloring.
 #' @return ggplot object
 #'
 #' @keywords keywords
@@ -12,18 +12,16 @@
 #'
 #' @examples
 #' R code here showing how your function works
-plot_coeff_w_legend <- function(info_input,k.col,plot.title){
+plot_coeff_w_legend <- function(info_input,k.col){
 
     if(k.col != "none"){
         ggplot(info_input, aes(x=idx, y= IC)) +
         geom_point(aes_string(colour = k.col),shape=20, size = 3) +
-        xlab("sample") + ylab("IC coefficient") +
-        labs(title = plot.title)
+        xlab("sample") + ylab("IC coefficient")
     } else {
         ggplot(info_input, aes(x=idx, y= IC)) +
         geom_point(aes(color = "black"),shape=20, size = 3) +
-        xlab("sample") + ylab("IC coefficient") +
-        labs(title = plot.title)
+        xlab("sample") + ylab("IC coefficient")
     }
 
 }

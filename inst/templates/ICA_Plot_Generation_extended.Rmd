@@ -4,21 +4,14 @@
 # setting global options 
 figure.outpath <- paste(output.path,"/icreport_figures/",prefix,"/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
-options(warn=-1)
+options(warn=-1,width = 100)
 ```
 
 ### Covariate Correlation Summary
 
-```{r Covariate_correlation_summary,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 14,fig.height = 6 }
+```{r Covariate_correlation_summary,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
 update_geom_defaults("bar",list(fill = "black"))
 
-if(!is.null(ica.result$hclust)){
-      n.ics <- dim(ica.result$A)[1]
-      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",
-                                                                n.ics,"significant ICs"))
-      abline(h=ica.result$hclust$cutoff, col="red", lty=2)
-  
-}
 
 
 if(!is.null(ica.result$info.df)){
@@ -97,7 +90,7 @@ if(!is.null(ica.result$info.df)){
 }
 ```
 
-```{r summary_1row,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 4 }
+```{r summary_1row,echo= FALSE,comment=NA, fig.show = "hold", fig.width = 12,fig.height = 4 }
 
 if(!is.null(ica.result$info.df)){
     if(length(covariates) < 7){
@@ -106,7 +99,7 @@ if(!is.null(ica.result$info.df)){
 }
 ```
 
-```{r summary_2row,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 6 }
+```{r summary_2row,echo= FALSE,comment=NA, fig.show = "hold", fig.width = 12,fig.height = 6 }
 
 if(!is.null(ica.result$info.df)){
     if(length(covariates) > 6){
@@ -115,7 +108,7 @@ if(!is.null(ica.result$info.df)){
 }
 ```
 
-```{r summary_plot2,echo= FALSE,warning=FALSE,comment=NA,message=FALSE, fig.show = "hold", fig.width = 12,fig.height = 4 }
+```{r summary_plot2,eval = FALSE, echo= FALSE,comment=NA, fig.show = "hold", fig.width = 12,fig.height = 4 }
 if(!is.null(ica.result$info.df)){
     multiplot(plotlist = list(summary.plots[[3]],summary.plots[[4]], summary.plots[[5]]),cols = 3)
 }
@@ -123,8 +116,7 @@ if(!is.null(ica.result$info.df)){
 
 ### Individual IC plots 
 
-```{r Individual_IC_Plots, echo = FALSE,comment=NA,warning=FALSE, message=FALSE,fig.width = 10,fig.height = 5}
-
+```{r Individual_IC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 5}
 for( p in 1:dim(ica.result$A)[1]){
    
     if(is.null(ica.result$geneinfo)){
@@ -156,7 +148,7 @@ for( p in 1:dim(ica.result$A)[1]){
         }
         
         # Gene weight histogram plot (Investigating the non-normality of the component )
-        mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram")
+        mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram") + coord_flip()
        
         # create a data frame for plotting
         if(!is.null(colnames(ica.result$A)) & !is.null(info.df)){
@@ -184,27 +176,27 @@ for( p in 1:dim(ica.result$A)[1]){
           
         # color the graph by the covariate with the most significant association
         color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
-        mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
-                                            plot.title = paste("Covariate = ",color.by,sep="")) + 
-                                            theme(legend.position ="none")
+        mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by) + 
+        #                                    plot.title = paste("Covariate = ",color.by,sep="")) + 
+                                                theme(legend.position ="none")
         
         # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
         # Need to figure out which plot might be most effective
         
             if(class(info.df[,color.by]) == "factor"){
                   mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                              geom_boxplot() + xlab("Covariate") + ylab("") +  
+                                              geom_boxplot() + xlab(paste("Covariate = ",color.by,sep="")) + ylab("") +  
                                               theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
             
             } else{
                   mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                          geom_point() + xlab("Covariate")  + ylab("") +
+                                          geom_point() + xlab(paste("Covariate = ",color.by,sep=""))  + ylab(" ") +
                                           theme(axis.ticks = element_blank(), axis.text.x = element_blank())
             }
             
 
 
-          } else if(mclust.obj$G != 1){
+          } else {
           
             # If IC is not correlated to covariate color it using the clustering information obtained from mclust
         
@@ -212,24 +204,19 @@ for( p in 1:dim(ica.result$A)[1]){
             
             mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
                                         geom_point(size = 3, pch = 20) + 
-                                        xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") + 
-                                        scale_color_brewer(palette = "Set1") 
+                                        xlab("Sample idx") + ylab("IC coefficient") + 
+                                        theme(legend.position = "none")
             
             mclust.plots[[3]] <- ggplot(coeff.plot.df, aes(x = mclust, y = IC, color = mclust)) + 
-                                        geom_boxplot() + xlab("Covariate") + ylab("") +  
+                                        geom_boxplot() + xlab(paste(mclust.obj$G,"clusters detected")) + ylab(" ") +  
                                         theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+            
+            if(mclust.obj$G == 1){
+                    mclust.plots[[2]] <- mclust.plots[[2]]
+                    mclust.plots[[3]] <- mclust.plots[[3]]  + xlab("No clusters detected") + theme(legend.position = "none")
+            }
       
-        } else {
-            coeff.plot.df$mclust <- factor(rep(1,dim(coeff.plot.df)[1]))
-            
-            mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
-                                        geom_point(size = 3, pch = 20) + 
-                                        xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") + 
-                                        scale_color_brewer(palette = "Set1") + theme(legend.position = "none")
-            
-            mclust.plots[[3]] <-  ggplot(coeff.plot.df, aes(x = IC)) + xlab("IC Coefficients") + ylab("")+
-                                          geom_histogram(aes(y = ..density..)) + geom_density()
-        }
+        } 
       
        
       
@@ -251,16 +238,35 @@ for( p in 1:dim(ica.result$A)[1]){
         
         cat("--------------------------------------------------------------------------------------------------------------","\n")
         if (i %in% unique(ica.result$cov.corr.idx$IC)){
-            cat("IC # ",i," Correlation with covariate ", color.by,
-                "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")    
-            cat("Top 10 Gene Weights \n")
-            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
-            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
+            #cat("IC # ",i," Correlation with covariate ", color.by,
+            #    "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")
+            ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+                                  "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
+                                  "Correlated_Covariate" = color.by, 
+                                  "p-value" = ica.result$cov.pval.mx[i,color.by], 
+                                  "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
+            print(ic.info)
+            cat("---- Top 10 Gene Weights ---- \n")
+            gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
+            print(gene.table)
+            rm(ic.info, gene.table)
+            #cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            #cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
         } else {
-            cat("IC # ",i," No correlation with covariates / Variance (%) = ",ica.result$percent.var[i],"\n")
-            cat("Top 10 Gene Weights \n")
-            cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
-            cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ", sep ="  "), "\n")
+            #cat("IC # ",i," No correlation with covariates / Variance (%) = ",ica.result$percent.var[i],"\n")
+            ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+                                  "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
+                                  "Correlated_Covariate" = "none", 
+                                  "p-value" = NA, 
+                                  "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
+            print(ic.info)
+            cat("---- Top 10 Gene Weights ---- \n")
+            gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
+            print(gene.table)
+            rm(ic.info, gene.table)
+            #knitr::kable(gene.table, digits = 2, caption = "A table produced by printr.")
+            #cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            #cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ", sep ="  "), "\n")
         }
         cat("--------------------------------------------------------------------------------------------------------------","\n")
       
@@ -318,8 +324,7 @@ for( p in 1:dim(ica.result$A)[1]){
           
             # color the graph by the covariate with the most significant association
             color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
-           mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by,
-                                                    plot.title = paste("Covariate = ",color.by,sep=""))
+           mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by)
            
            # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
            # Need to figure out which plot might be most effective
@@ -411,3 +416,13 @@ for( p in 1:dim(ica.result$A)[1]){
 
 ```
 
+
+```{r,echo= FALSE,comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6}
+if(!is.null(ica.result$hclust)){
+      n.ics <- dim(ica.result$A)[1]
+      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",
+                                                                n.ics,"significant ICs"))
+      abline(h=ica.result$hclust$cutoff, col="red", lty=2)
+  
+}
+```

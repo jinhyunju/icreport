@@ -3,12 +3,12 @@
 \alias{plot_coeff_w_legend}
 \title{Plotting the coefficients for a single IC}
 \usage{
-plot_coeff_w_legend(info_input, k.col, plot.title)
+plot_coeff_w_legend(info_input, k.col)
 }
 \arguments{
-\item{plot.title}{Character title of the plot\code{plot.title}}
+\item{info_input}{A dataframe that has the index and values of ICs with covariate information saved.}
 
-\item{s}{A single component  \code{s}}
+\item{k.col}{The column name to use for plot coloring.}
 }
 \value{
 ggplot object
