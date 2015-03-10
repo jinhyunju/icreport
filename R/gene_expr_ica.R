@@ -13,6 +13,8 @@
 #' @param max.iter Maximum iterations for estimating k for each run. Default value is set to 10.
 #' @param n.cores Number of cores to be used for estimating k. Default is set to 1.
 #' @param cor.threshold Threshold for significant correlation calling. Default is set to 0.05.
+#' @param similarity.measure How to measure the similarity between ICs.
+#' If set to "peaks" only gene weights that are greater than 1 sd are used to calculate similarity.
 #' @return List with the following entries.
 #' @keywords keywords
 #'
@@ -23,11 +25,22 @@
 #' R code here showing how your function works
 gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
                     k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3,
-                    n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05, ...){
+                    n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05,
+                    similarity.measure = "peaks", ...){
 
     if(is.null(phenotype.mx)){
         message("Error: Phenotype matrix is missing \n")
         break;
+    }
+
+    if(is.null(colnames(phenotype.mx))){
+      message("Phenotype.mx is missing column names, set to default. \n")
+      colnames(phenotype.mx) <- paste("sample",c(1:ncol(phenotype.mx)), sep = "_")
+    }
+
+    if(is.null(rownames(phenotype.mx))){
+      message("Phenotype.mx is missing row names, set to default. \n")
+      rownames(phenotype.mx) <- paste("feature",c(1:nrow(phenotype.mx)), sep = "_")
     }
 
     if(is.null(n.cores)){
@@ -74,20 +87,25 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       #combined.A <- do.call(rbind, lapply(ica.list, function(x) x$A))
       combined.S <- do.call(cbind, lapply(ica.list, function(x) x$S)) # combine all components into a single matrix
       peak.matrix <- do.call(cbind, lapply(ica.list, function(x) x$peak.mx)) # combine all peak position matrices as well
-      peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
 
-      cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
+      if(similarity.measure == "peaks"){
+        peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
+        cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
+      } else {
+        cor.mx <- cor(combined.S)
+      }
 
 
       # clustering of the components
       dissimilarity <- 1 - abs(cor.mx) # create dissimilarity matrix
       cor.dist <- as.dist(dissimilarity) # convert into distance matrix format for clustering
       h.clust <- hclust(cor.dist)          # run hierarchical clustering
+      #plot(h.clust)
       groups <- cutree(h.clust, h=h.clust.cutoff)   # cut tree at height 0.3 (absolute correlation > 0.7)
 
 
       group.table <- table(groups)     # count member components for each group
-      multi.component.group <- which(group.table > (n.runs * 0.6)) # get groups with more than 2 members
+      multi.component.group <- which(group.table >= (n.runs * 0.6)) # get groups with more than 2 members
 
       k.update <- length(multi.component.group)
       message("- ",k.update," Replicating Components Estimated \n")
@@ -139,7 +157,9 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     rownames(ica.result$A) <- paste("IC",c(1:dim(ica.result$A)[1]),sep="")
 
     # Attaching the sample info dataframe to the ica list
-    ica.result$info.df <- info.df[colnames(phenotype.mx),]
+    if(!is.null(info.df)){
+      ica.result$info.df <- info.df[colnames(phenotype.mx),]
+    }
     message("------ Post-ICA Processing ------- \n")
     message("- Labeling peak genes in each IC \n")
     ica.result$peaks <- apply(ica.result$S, 2, peak_detection)
@@ -217,10 +237,19 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     # Turn warnings back on to prevent disasters
     options(warn=0)
 
-    ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
-                                         "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
-                                         "percent.var" = percent.var,                                     # Percent variance explained
-                                         "corr.ic" = factor(sig), "idx" = c(1:k.update))             # if correlated with covariate = 1 , 0 otherwise
+    if(!is.null(info.df)){
+      ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
+                                           "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
+                                           "percent.var" = percent.var,                                     # Percent variance explained
+                                           "corr.ic" = factor(sig), "idx" = c(1:k.update))             # if correlated with covariate = 1 , 0 otherwise
+
+    } else {
+      ica.result$ica.stat.df <- data.frame("N.peaks"=sapply(ica.result$peaks, function(x) length(x)), # Number of peaks for each IC
+                                           "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
+                                           "percent.var" = percent.var,                                     # Percent variance explained
+                                           "idx" = c(1:k.update))             # if correlated with covariate = 1 , 0 otherwise
+
+    }
 
 
     # which IC has more than 1 predicted clusters?

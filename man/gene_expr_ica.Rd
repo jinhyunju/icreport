@@ -5,7 +5,8 @@
 \usage{
 gene_expr_ica(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
   k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3, n.runs = 5,
-  max.iter = 10, n.cores = NULL, cor.threshold = 0.05, ...)
+  max.iter = 10, n.cores = NULL, cor.threshold = 0.05,
+  similarity.measure = "peaks", ...)
 }
 \arguments{
 \item{phenotype.mx}{Phenotype matrix with diemnsions g x N}
@@ -28,6 +29,9 @@ that should be used for association testing with IC coefficients.}
 \item{n.cores}{Number of cores to be used for estimating k. Default is set to 1.}
 
 \item{cor.threshold}{Threshold for significant correlation calling. Default is set to 0.05.}
+
+\item{similarity.measure}{How to measure the similarity between ICs.
+If set to "peaks" only gene weights that are greater than 1 sd are used to calculate similarity.}
 }
 \value{
 List with the following entries.

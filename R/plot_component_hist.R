@@ -16,7 +16,7 @@ plot_component_hist <- function(s,plot.title){
   G <- length(s)
   plot.sig <- data.frame(idx = c(1:G), sig = s)
   p <- ggplot(plot.sig, aes(x = sig)) +geom_histogram(aes(y = ..density..)) + xlab("Gene Weights") +
-    labs(title = plot.title) + geom_density() + ylab("")
+    labs(title = plot.title) + geom_density() + ylab("") + coord_flip()
   return(p)
 
 }

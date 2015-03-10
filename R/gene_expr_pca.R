@@ -23,8 +23,11 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       message("Please specify phenotype matrix \n")
       break;
     }
+    message("Pre Processing Data \n")
+    phenotype.mx <- pre_process_data(phenotype.mx,
+                                     scale.pheno = scale.pheno)
 
-    message("Running PCA\n")
+    message("Running PCA \n")
     pca.result <- prcomp(t(phenotype.mx))
 
 

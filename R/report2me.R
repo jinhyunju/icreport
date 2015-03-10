@@ -44,7 +44,7 @@ report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path =
         info.df <- ica.result$info.df
         data.set <- prefix
 
-        markdown.file <- system.file("templates/ICA_Plot_Generation_extended.Rmd", package="icreport")
+        markdown.file <- system.file("templates/Component_Visualization_Report.Rmd", package="icreport")
 
         outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")
 
@@ -61,8 +61,8 @@ report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path =
         }
 
         data.set <- prefix
-        markdown.file <- system.file("templates/PCA_Plot_Generation_ver2.Rmd", package="icreport")
-
+        #markdown.file <- system.file("templates/PCA_Plot_Generation_ver2.Rmd", package="icreport")
+        markdown.file <- system.file("templates/Component_Visualization_Report.Rmd", package="icreport")
         outFile = paste(output.path,"/",prefix,"_PCA_summary.html",sep="")
 
         rmarkdown::render(markdown.file,output_file = outFile,output_format = "html_document")

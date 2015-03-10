@@ -15,6 +15,7 @@
 #' R code here showing how your function works
 peak_detection <- function(ica.input.s){
   peaks.idx <- which(abs(ica.input.s) > (2 * sd(ica.input.s))) # get the peak indexes
-  peaks <- ica.input.s[names(sort(abs(ica.input.s[peaks.idx]), decreasing = T))] # sort them in decreasing order of absolute magnitude
+  peaks <- ica.input.s[names(sort(abs(ica.input.s[peaks.idx]), decreasing = T))]
+  # sort them in decreasing order of absolute magnitude
   return(peaks)
 }
