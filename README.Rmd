@@ -125,4 +125,4 @@ report2me(input = pca_result, prefix = "Test_PCA_Report")
 ```
 
 
-Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian, and Jason for testing and feedback. 
+Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian, and Jason B. for testing and feedback. 
