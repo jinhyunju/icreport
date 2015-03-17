@@ -24,7 +24,7 @@ if(method == "ica"){
 
 ### Covariate Correlation Summary
 
-```{r Covariate_correlation_summary,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
+```{r Covariate_correlation_summary_ICA,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
 if(method == "ica"){
   if(!is.null(ica.result$info.df)){
     
@@ -109,7 +109,11 @@ if(method == "ica"){
       
   }
 
-} else if (method == "pca"){
+} 
+```
+
+```{r Covariate_correlation_summary_PCA,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
+if (method == "pca"){
   if(!is.null(pca.result$info.df)){
     summary.pca.df <- data.frame("PC1" = pca.result$x[,1],
                                  "PC2" = pca.result$x[,2],
@@ -515,7 +519,12 @@ if(method == "ica"){
   
       
   }
-} else if (method == "pca"){
+} 
+```
+
+
+```{r Individual_PC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 5}
+if (method == "pca"){
   for( i in 1:plot.pc){
   
   mclust.plots <- list()
@@ -624,8 +633,9 @@ if(method == "ica"){
   
   }
 }
-```
 
+
+```
 
 ```{r,echo= FALSE,comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6}
 if(method == "ica"){
