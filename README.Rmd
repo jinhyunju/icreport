@@ -17,6 +17,7 @@ If you already know what you want to use the package for, follow this simple exa
 install.packages("devtools") # in case you don't have devtools already
 
 devtools::install_github("jinhyunju/icreport") #installing icreport
+
 ```
 
 2) Installing and loading an example dataset using the package GEOquery.
@@ -29,6 +30,8 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 ```{r Install datasets, eval = FALSE}
 source("http://bioconductor.org/biocLite.R")    # install the GEOquery package
 biocLite("GEOquery")        
+library("GEOquery") # load package into workspace
+
 gse60028 <- GEOquery::getGEO(GEO = "GSE60028")  # get the GEO data 
                                                 # (this may take a few minutes depending on your network connection)
 geo.eset <- gse60028$GSE60028_series_matrix.txt.gz # extract the expression set
