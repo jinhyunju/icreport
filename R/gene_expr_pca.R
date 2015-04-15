@@ -24,20 +24,25 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       break;
     }
     message("Pre Processing Data \n")
+    # removing NA values, centering, scaling (optional)
     phenotype.mx <- pre_process_data(phenotype.mx,
                                      scale.pheno = scale.pheno)
 
     message("Running PCA \n")
     pca.result <- prcomp(t(phenotype.mx))
 
-
-    pca.result$var.percent <- pca.result$sdev / sum(pca.result$sdev) * 100
+    # calculating percent variance each component explains
+    pca.result$var.percent <- (pca.result$sdev^2 / sum(pca.result$sdev^2)) * 100
 
     if(!is.null(check.covars) & !is.null(info.df)){
       message("Checking association between covariates and components\n")
       # Anova analysis for covariates vs ICA weights (A matrix)
       pca.result$cov.pval.mx <- component_association_test(t(pca.result$x),info.df,check.covars)
-      cor.threshold <- cor.threshold / (dim(pca.result$cov.pval.mx)[1] * dim(pca.result$cov.pval.mx)[2])
+
+      # get bonferroni corrected threshold
+      cor.threshold <- cor.threshold / (length(pca.result$cov.pval.mx))
+
+      # row and column positions for significant p-values
       corr.idx <- which(pca.result$cov.pval.mx < cor.threshold, arr.ind = T)
     } else{
       message("No info.df supplied, association test skipped.\n")
@@ -45,12 +50,19 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     }
 
     if(length(corr.idx) != 0 ){
+
+      # get PCs that were correlated to a covariate
       correlated.pc <- unique(corr.idx[,1])
 
+      # Initiate dataframe to save results
       covariate.corr.df <- data.frame(matrix(nrow = length(correlated.pc),ncol = 3))
       colnames(covariate.corr.df) <- c("PC","Covariate.idx","Covariate.Name")
+
       for( c in 1:length(correlated.pc)){
+        # get the PC number
         pc.index <- correlated.pc[c]
+
+        # get the most significantly correlated covariate
         covar.index <- which.min(pca.result$cov.pval.mx[pc.index,])
         covariate.corr.df[c,"PC"] <- pc.index
         covariate.corr.df[c,"Covariate.idx"] <- covar.index
@@ -58,15 +70,20 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       }
 
       pca.result$cov.corr.idx <- covariate.corr.df
+
+      # Add variance information
       pca.result$cov.corr.idx$var <- pca.result$var.percent[pca.result$cov.corr.idx$PC]
 
+      # remove temprary objects just for clarity
       rm(covariate.corr.df, covar.index, pc.index, c)
     } else {
       pca.result$cov.corr.idx <- NULL     # in case there are no associated covariates
     }
 
-
+    # save sample information in output object
     pca.result$info.df <- info.df
+
+    # label result as pca for report2me() function
     attr(pca.result, 'method') <- "pca"
     return(pca.result)
 }
