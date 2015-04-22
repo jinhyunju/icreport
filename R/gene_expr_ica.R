@@ -143,6 +143,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
                                       fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                       alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
                                       maxit=500, tol = 0.0001, verbose = TRUE)
+      k.update <- k.est
 #      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
 #                                     alg.typ = "parallel",method = "R",
 #                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
