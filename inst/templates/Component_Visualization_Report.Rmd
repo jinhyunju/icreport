@@ -294,14 +294,22 @@ if(method == "ica"){
           # Need to figure out which plot might be most effective
           
               if(class(info.df[,color.by]) == "factor"){
-                    mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                                geom_boxplot() + xlab(paste("Covariate = ",color.by,sep="")) + ylab("") +  
-                                                theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
+                    mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                                aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                                geom_boxplot() + 
+                                                xlab(paste("Covariate = ",color.by,sep="")) + 
+                                                ylab("") +  
+                                                theme(axis.ticks = element_blank(), 
+                                                      axis.text.x = element_blank()) 
               
               } else{
-                    mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                            geom_point() + xlab(paste("Covariate = ",color.by,sep=""))  + ylab(" ") +
-                                            theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+                    mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                                aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                                geom_point() + 
+                                                xlab(paste("Covariate = ",color.by,sep=""))  + 
+                                                ylab(" ") +
+                                                theme(axis.ticks = element_blank(), 
+                                                      axis.text.x = element_blank())
               }
               
   
@@ -317,13 +325,19 @@ if(method == "ica"){
                                           xlab("Sample idx") + ylab("IC coefficient") + 
                                           theme(legend.position = "none")
               
-              mclust.plots[[3]] <- ggplot(coeff.plot.df, aes(x = mclust, y = IC, color = mclust)) + 
-                                          geom_boxplot() + xlab(paste(mclust.obj$G,"clusters detected")) + ylab(" ") +  
-                                          theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+              mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                          aes(x = mclust, y = IC, color = mclust)) + 
+                                          geom_boxplot() + 
+                                          xlab(paste(mclust.obj$G,"clusters detected")) + 
+                                          ylab(" ") +  
+                                          theme(axis.ticks = element_blank(), 
+                                                axis.text.x = element_blank())
               
               if(mclust.obj$G == 1){
                       mclust.plots[[2]] <- mclust.plots[[2]]
-                      mclust.plots[[3]] <- mclust.plots[[3]]  + xlab("No clusters detected") + theme(legend.position = "none")
+                      mclust.plots[[3]] <- mclust.plots[[3]]  + 
+                                           xlab("No clusters detected") + 
+                                           theme(legend.position = "none")
               }
         
           } 
@@ -414,11 +428,14 @@ if(method == "ica"){
               } else if (is.null(info.df)) {
                 
               # If there is no sample information available
-              coeff.plot.df <- data.frame("IC" = ica.result$A[i,],"idx"=c(1:dim(ica.result$A)[2]))
+              coeff.plot.df <- data.frame("IC" = ica.result$A[i,],
+                                          "idx"=c(1:dim(ica.result$A)[2]))
           
               } else {
                 
-              coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = ica.result$A[i,],"idx"=c(1:dim(ica.result$A)[2]))
+              coeff.plot.df <- data.frame(as.data.frame(info.df),
+                                          "IC" = ica.result$A[i,],
+                                          "idx"=c(1:dim(ica.result$A)[2]))
           
           }
           
@@ -448,7 +465,9 @@ if(method == "ica"){
               
               mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
                                           geom_point(size = 3, pch = 20) + 
-                                          xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") +  theme(legend.position = "none")
+                                          xlab("Sample idx") + ylab("IC coefficient") + 
+                                          labs(title = "Classification by Mclust") +  
+                                          theme(legend.position = "none")
           }
         
            
@@ -530,13 +549,17 @@ if (method == "pca"){
   mclust.plots <- list()
   
   mclust.obj <- suppressMessages(Mclust(pca.result$x[,i], modelNames = "V"))
-  mclust.bic.df <- data.frame("V" = mclust.obj$BIC, "N.clust" = attr(mclust.obj$BIC,"G"))
-  mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,"data" = mclust.obj$data )
+  mclust.bic.df <- data.frame("V" = mclust.obj$BIC, 
+                              "N.clust" = attr(mclust.obj$BIC,"G"))
+  mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,
+                              "data" = mclust.obj$data )
   
   # Plot IC loading with peaks labeled in red
-  mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],paste(data.set,"_PC#_",i,sep =""))
+  mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],
+                                      paste(data.set,"_PC#_",i,sep =""))
   
-  mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],"Gene Weight Histogram")
+  mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],
+                                           "Gene Weight Histogram")
   
   # create a data frame for plotting
   if(!is.null(colnames(pca.result$x)) & !is.null(pca.result$info.df)){
@@ -549,10 +572,13 @@ if (method == "pca"){
   
   } else if (is.null(pca.result$info.df)) {
   # If there is no sample information available
-  coeff.plot.df <- data.frame("IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
+  coeff.plot.df <- data.frame("IC" = pca.result$x[,i],
+                              "idx"=c(1:dim(pca.result$x)[1]))
   
   } else {
-   coeff.plot.df <- data.frame(as.data.frame(pca.result$info.df),"IC" = pca.result$x[,i],"idx"=c(1:dim(pca.result$x)[1]))
+   coeff.plot.df <- data.frame(as.data.frame(pca.result$info.df),
+                               "IC" = pca.result$x[,i],
+                               "idx"=c(1:dim(pca.result$x)[1]))
   
   }
   
@@ -585,9 +611,13 @@ if (method == "pca"){
       geom_point(size = 3, pch = 20) + theme(legend.position = "none") +
       xlab("Sample idx") + ylab("PC coefficient") 
     
-    mclust.plots[[3]] <- ggplot(coeff.plot.df, aes(x = mclust, y = IC, color = mclust)) + 
-                                geom_boxplot() + xlab(paste(mclust.obj$G,"clusters detected")) + ylab(" ") +  
-                                theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+    mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                aes(x = mclust, y = IC, color = mclust)) + 
+                                geom_boxplot() + 
+                                xlab(paste(mclust.obj$G,"clusters detected")) + 
+                                ylab(" ") +  
+                                theme(axis.ticks = element_blank(), 
+                                      axis.text.x = element_blank())
       
       if(mclust.obj$G == 1){
         mclust.plots[[3]] <- mclust.plots[[3]] + xlab("No Clusters detected")
@@ -641,8 +671,9 @@ if (method == "pca"){
 if(method == "ica"){
   if(!is.null(ica.result$hclust)){
       n.ics <- dim(ica.result$A)[1]
-      plot(ica.result$hclust$plot, labels = FALSE, main = paste("Hierarchical Clustering of Multiple ICA Runs /",
-                                                                n.ics,"significant ICs"))
+      plot(ica.result$hclust$plot, labels = FALSE, 
+           main = paste("Hierarchical Clustering of Multiple ICA Runs /",
+           n.ics,"significant ICs"))
       abline(h=ica.result$hclust$cutoff, col="red", lty=2)
   
   }
@@ -652,7 +683,10 @@ if(method == "ica"){
 ```{r summary_plot2,eval = FALSE, echo= FALSE,comment=NA, fig.show = "hold", fig.width = 12,fig.height = 4 }
 if(method == "ica"){
   if(!is.null(ica.result$info.df)){
-    multiplot(plotlist = list(summary.plots[[3]],summary.plots[[4]], summary.plots[[5]]),cols = 3)
+    multiplot(plotlist = list(summary.plots[[3]],
+                              summary.plots[[4]], 
+                              summary.plots[[5]]),
+              cols = 3)
   }
 }
 ```
