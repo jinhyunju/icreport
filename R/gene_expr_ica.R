@@ -278,7 +278,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         peak.temp <- names(ica.result$peaks[[k]])
         ica.result$ica.confeti.mx[peak.temp,ic.name] <- 1
     }
-    message("------ Process completed without any interuptions ------- =) \n")
+    message("------ Process completed without any interuptions ------- :) \n")
     attr(ica.result, 'method') <- "ica"
     return(ica.result)
 }
