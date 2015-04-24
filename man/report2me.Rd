@@ -4,7 +4,7 @@
 \title{Generating ICA or PCA summary reports.}
 \usage{
 report2me(input = NULL, n.comps = NULL, prefix = NULL,
-  output.path = NULL, file.ext = "png")
+  geneinfo.df = NULL, output.path = NULL, file.ext = "png")
 }
 \arguments{
 \item{input}{ICA or PCA result list created by either \code{gene_expr_ica()} or \code{gene_expr_pca()}.}

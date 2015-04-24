@@ -228,8 +228,6 @@ if(method == "ica"){
 ```{r Individual_IC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 5}
 if(method == "ica"){
   for( p in 1:dim(ica.result$A)[1]){
-     
-      if(is.null(ica.result$geneinfo)){
           ###################### Plotting without Gene information ########################## 
           # check if there is a specified order for the ICs (default is by explained variance)
           if(!is.null(ica.result$order)){
@@ -238,25 +236,61 @@ if(method == "ica"){
               i <- p
           }
           
+          
+          if(!is.null(ica.result$geneinfo)){
+            # create axis tick positions for chromosomes if gene info is supplied
+            chromosomes <- unique(ica.result$ordered.geneinfo$pheno_chr)
+            x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
+            
+            for(i in 1:length(chromosomes)){
+              j <- chromosomes[i]
+              cat("level = ",i,"\n")
+              match(i, chromosomes)
+              x.axis[1,i] <- min(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+              x.axis[2,i] <- max(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+            }
+            
+            x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
+  
+          }
+          
           # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
           mclust.obj <- suppressMessages(mclust::Mclust(ica.result$A[i,], modelNames = "V"))
         
           mclust.plots <- list()
          
          # Plot IC loading with peaks labeled in red (If peaks are available)
-          if(!is.null(ica.result$peaks)){
-              # If the peaks are labeled use them 
-              mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
-                                                  peakresult = ica.result$peaks[[i]], 
-                                                  gene.names = rownames(ica.result$S),
-                                                  plot.title = paste(data.set,"_IC#_",i,sep =""))    
-          } else {
-              # If no peak labeling is available color them in black
-              mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
-                                                  plot.title = paste(data.set,"_IC#_",i,sep =""))    
-         
+         if(is.null(ica.result$ordered.geneinfo)){           
+           if(!is.null(ica.result$peaks)){
+                # If the peaks are labeled use them 
+                mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
+                                                    peakresult = ica.result$peaks[[i]], 
+                                                    gene.names = rownames(ica.result$S),
+                                                    plot.title = paste(data.set,"_IC#_",i,sep =""))    
+            } else {
+                # If no peak labeling is available color them in black
+                mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
+                                                    plot.title = paste(data.set,"_IC#_",i,sep =""))    
+           
+            }
+          } else { # if gene position information is available
+            if(!is.null(ica.result$peaks)){
+                # If the peaks are labeled use them 
+                mclust.plots[[1]] <- plot_component_chr(ica.result$S[,i], 
+                                                        geneinfo = ica.result$ordered.geneinfo,
+                                                        x.axis = x.axis,
+                                                        plot.title = plot.title, 
+                                                        peaks = TRUE, 
+                                                        peakresult = ica.result$peaks[[i]])
+            } else {
+                # If no peak labeling is available color them in black
+                mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
+                                                    plot.title = paste(data.set,"_IC#_",i,sep =""))    
+            
+            }              
+            
+
           }
-          
           # Gene weight histogram plot (Investigating the non-normality of the component )
           mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram") 
          
@@ -388,154 +422,7 @@ if(method == "ica"){
           cat("--------------------------------------------------------------------------------------------------------------","\n")
         
           suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))
-      } else if (!is.null(ica.result$geneinfo)) {
-          ###################### Plotting with Gene information ##########################        
-          if(!is.null(ica.result$order)){
-              i <- ica.result$order[p]
-          } else {
-              i <- p
-          }
-          
-          # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
-          mclust.obj <- suppressMessages(mclust::Mclust(ica.result$A[i,], modelNames = "V"))
-        
-          mclust.plots <- list()
-         
-         # Plot IC loading with peaks labeled in red (If peaks are available)
-          if(!is.null(ica.result$peaks)){
-              # If the peaks are labeled use them 
-              mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
-                                                  peakresult = ica.result$peaks[[i]], 
-                                                  gene.names = rownames(ica.result$S),
-                                                  plot.title = paste(data.set,"_IC#_",i,sep =""))    
-          } else {
-              # If no peak labeling is available color them in black
-              mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],
-                                                  plot.title = paste(data.set,"_IC#_",i,sep =""))    
-         
-          }
-          
-          # create a data frame for plotting
-          if(!is.null(colnames(ica.result$A)) & !is.null(info.df)){
-            
-              # Dataframe that will go into ggplot for plotting with IC coefficients in IC and idx as sample index
-              coeff.plot.df <- data.frame(as.data.frame(info.df[colnames(ica.result$A),]),
-                                          "IC" = ica.result$A[i,],
-                                          "idx"=c(1:dim(ica.result$A)[2]))
-              
-              # Setting the colnames to covariate names
-              colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[colnames(ica.result$A),]))[2]] <- colnames(info.df) 
-              } else if (is.null(info.df)) {
-                
-              # If there is no sample information available
-              coeff.plot.df <- data.frame("IC" = ica.result$A[i,],
-                                          "idx"=c(1:dim(ica.result$A)[2]))
-          
-              } else {
-                
-              coeff.plot.df <- data.frame(as.data.frame(info.df),
-                                          "IC" = ica.result$A[i,],
-                                          "idx"=c(1:dim(ica.result$A)[2]))
-          
-          }
-          
-         # If IC is correlated to a covariate color the pot accordingly
-          if(i %in% unique(ica.result$cov.corr.idx$IC)){
-            
-              # color the graph by the covariate with the most significant association
-              color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
-             mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by)
-             
-             # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
-             # Need to figure out which plot might be most effective
-    
-            } else if(mclust.obj$G != 1){
-            
-              # If IC is not correlated to covariate color it using the clustering information obtained from mclust
-          
-              coeff.plot.df$mclust <- factor(mclust.obj$classification)
-              
-              mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
-                                          geom_point(size = 3, pch = 20) + 
-                                          xlab("Sample idx") + ylab("IC coefficient") + labs(title = "Classification by Mclust") 
-  
-        
-          } else {
-              coeff.plot.df$mclust <- factor(rep(1,dim(coeff.plot.df)[1]))
-              
-              mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
-                                          geom_point(size = 3, pch = 20) + 
-                                          xlab("Sample idx") + ylab("IC coefficient") + 
-                                          labs(title = "Classification by Mclust") +  
-                                          theme(legend.position = "none")
-          }
-        
-           
-          # Gene Information plots
-          
-          geneinfo.df <- ica.result$geneinfo[[i]]
-          geneinfo.df$length <- geneinfo.df$end_position - geneinfo.df$start_position
-          
-          geneinfo.df <- na.omit(data.frame(geneinfo.df,"gene_weight" = abs(ica.result$peaks[[i]][as.character(geneinfo.df$row_ids)])))
-  
-          # chromosome summary plot
-          mclust.plots[[3]] <- ggplot(geneinfo.df, aes(x = chromosome_name, fill = chromosome_name, y = gene_weight)) + geom_bar(stat = "identity") + 
-                                       theme(legend.position = "none") + xlab("Chromosome") + scale_x_discrete(drop=FALSE) +
-                                       scale_fill_discrete(drop=TRUE,limits = levels(geneinfo.df$chromosome_name))
-         
-          # Biotype summary plot
-          mclust.plots[[4]] <- ggplot(geneinfo.df, aes(x = gene_biotype, fill = gene_biotype)) + geom_histogram() + coord_flip() +
-                                       theme_bw() + #theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") + 
-                                       xlab("")  + theme(legend.position = "none") + 
-                                       scale_x_discrete(drop=TRUE) +
-                                       scale_fill_discrete(drop=TRUE, limits = levels(geneinfo.df$gene_biotype))
-         
-          # Length summary
-          #mclust.plots[[5]] <- ggplot(geneinfo.df, aes(x = length, fill = gene_biotype)) + geom_histogram() + theme_bw() +
-          #                             labs(title = "Gene Length by Biotype")
-          
-          
-          layout <- matrix(c(1,1,2,2,
-                             3,3,4,4), byrow = T,ncol = 4)
-          
-  
-          for( k in 1:length(mclust.plots)){
-              mclust.plots[[k]] <- ggplot_add_theme(mclust.plots[[k]])
-          }
-          mclust.plots[[4]] <- mclust.plots[[4]] + theme(axis.text = element_text(size = 6))
-          cat("--------------------------------------------------------------------------------------------------------------","\n")
-          if (i %in% unique(ica.result$cov.corr.idx$IC)){
-              ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
-                                    "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
-                                    "Correlated_Covariate" = color.by, 
-                                    "p-value" = ica.result$cov.pval.mx[i,color.by], 
-                                    "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
-              print(ic.info)
-              cat("---- Top 10 Gene Weights ---- \n")
-              gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
-              print(gene.table)
-              rm(ic.info, gene.table)
-          } else {
-              ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
-                                    "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
-                                    "Correlated_Covariate" = "none", 
-                                    "p-value" = NA, 
-                                    "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
-              print(ic.info)
-              cat("---- Top 10 Gene Weights ---- \n")
-              gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
-              print(gene.table)
-              rm(ic.info, gene.table)
-          }
-          cat("--------------------------------------------------------------------------------------------------------------","\n")
-        
-          suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))
-        
-        
-        
-        
-      }
-  
+
       
   }
 } 

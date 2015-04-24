@@ -21,7 +21,11 @@
 #'
 #' @examples
 #' R code here showing how your function works
-report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path = NULL, file.ext = "png"){
+report2me <- function(input = NULL, 
+                      n.comps = NULL, 
+                      prefix = NULL, 
+                      geneinfo.df = NULL,
+                      output.path = NULL, file.ext = "png"){
 
     if(!exists("input")){
         stop("Please specify the input to generate a report. \n")
@@ -38,12 +42,31 @@ report2me <- function(input = NULL, n.comps = NULL, prefix = NULL, output.path =
     }
 
     method <- attr(input, 'method')
+    
+    if(!is.null(geneinfo.df)){
+      cat("Gene position provided\n")
+      # order data frame according to chromosome and start site
+      ordered.geneinfo <- geneinfo.df[order(nchar(geneinfo.df$pheno_chr), 
+                                            geneinfo.df$pheno_chr, 
+                                            geneinfo.df$pheno_start),]
+      
+      
+    }
+    
     if( method == "ica"){
 
         ica.result <- input
         info.df <- ica.result$info.df
         data.set <- prefix
+        
+        cat("Checking if gene information exists for every gene\n")
 
+        ica.result$ordered.geneinfo <- subset(ordered.geneinfo, 
+                                              phenotype %in% rownames(ica.result$S))
+        if(nrow(ordered.geneinfo) != nrow(ica.result$S)){
+          stop("Missing gene position information"); 
+        }
+        
         markdown.file <- system.file("templates/Component_Visualization_Report.Rmd", package="icreport")
 
         outFile = paste(output.path,"/",prefix,"_ICA_summary.html",sep="")

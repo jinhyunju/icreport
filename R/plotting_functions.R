@@ -12,7 +12,7 @@
 #' @examples
 #' R code here showing how your function works
 #' @export
-plot_component_hist <- function(s,plot.title){
+plot_component_hist <- function(s, plot.title){
   G <- length(s)
   plot.sig <- data.frame(idx = c(1:G), sig = s)
   p <- ggplot(plot.sig, aes(x = sig)) +geom_histogram(aes(y = ..density..)) + xlab("Gene Weights") +
@@ -32,11 +32,15 @@ plot_component_hist <- function(s,plot.title){
 #'
 #' @keywords keywords
 #'
-#' @export
 #'
 #' @examples
 #' R code here showing how your function works
-plot_component <- function(s, plot.title, peaks = FALSE, peakresult = NULL, gene.names = NULL){
+#' @export
+plot_component <- function(s, 
+                           plot.title, 
+                           peaks = FALSE, 
+                           peakresult = NULL, 
+                           gene.names = NULL){
   if(peaks == FALSE){
     G <- length(s)
     #plot.sig <- data.frame(idx = seq(1,G,1), sig = s)
@@ -55,8 +59,10 @@ plot_component <- function(s, plot.title, peaks = FALSE, peakresult = NULL, gene
     #plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
     plot.sig <- data.frame(idx = rank(-s, ties.method = "first"), sig = s, peaks = peak.idx)
     plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
-    p <- ggplot(plot.sig, aes(x=idx, y= sig)) + geom_linerange(aes(ymin=0, ymax=sig, colour = factor(peaks))) +
-      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) + xlab("Genes sorted by weights") + ylab("Gene Weights")+
+    p <- ggplot(plot.sig, aes(x=idx, y= sig)) + 
+      geom_linerange(aes(ymin=0, ymax=sig, colour = factor(peaks))) +
+      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) + 
+      xlab("Genes sorted by weights") + ylab("Gene Weights")+
       labs(title = plot.title) +theme(legend.position="none")
     return(p)
   }
@@ -77,7 +83,7 @@ plot_component <- function(s, plot.title, peaks = FALSE, peakresult = NULL, gene
 #'
 #' @examples
 #' R code here showing how your function works
-plot_coeff_w_legend <- function(info_input,k.col){
+plot_coeff_w_legend <- function(info_input, k.col){
 
   if(k.col != "none"){
     ggplot(info_input, aes(x=idx, y= IC)) +
@@ -160,4 +166,36 @@ ggplot_add_theme <- function(inputplot){
                                  panel.grid.major = element_line(colour = "grey80", linetype="dashed"),
                                  panel.background = element_rect(fill = NA,color = "grey80"))
   return(inputplot)
+}
+
+#' Plotting function that indicates gene position on chromosome
+#'
+#' The function generates a plot with gene weights for individual ICs according
+#' to their position on each chromosome. 
+#'
+#' @export
+plot_component_chr <- function(s, 
+                               geneinfo.df,
+                               x.axis,
+                               plot.title, 
+                               peaks = FALSE, 
+                               peakresult = NULL){
+  geneinfo.df$loading <- s
+  geneinfo.df$peaks <- 1 * (geneinfo.df$phenotype %in% names(peakresult))
+  #geneinfo.df <- geneinfo.df[order(nchar(geneinfo.df$pheno_chr), geneinfo.df$pheno_chr, geneinfo.df$loading),]
+  geneinfo.df$idx <- c(1:nrow(geneinfo.df))
+  n.peaks <- sum(geneinfo.df$peaks)
+  plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
+  
+  p <- ggplot(geneinfo.df, aes(x = idx, y = loading)) + 
+    geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) + 
+    theme_bw() +
+    geom_vline(xintercept=c(0,x.axis[2,]), linetype="dotted") +
+    scale_x_continuous("",breaks=x.axis[3,],labels=unique(geneinfo.df$pheno_chr), expand = c(0, 0))+
+    scale_y_continuous(expand = c(0, 0)) + labs(title = plot.title) + 
+    scale_color_manual(values=c("grey", "red")) +
+    xlab("Gene Chromosome Location") + ylab("Gene Weights") +
+    theme(legend.position="none")
+  
+  return(p)
 }

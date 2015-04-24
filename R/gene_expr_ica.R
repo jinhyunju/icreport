@@ -100,7 +100,6 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       dissimilarity <- 1 - abs(cor.mx) # create dissimilarity matrix
       cor.dist <- as.dist(dissimilarity) # convert into distance matrix format for clustering
       h.clust <- hclust(cor.dist)          # run hierarchical clustering
-      #plot(h.clust)
       groups <- cutree(h.clust, h=h.clust.cutoff)   # cut tree at height 0.3 (absolute correlation > 0.7)
 
 
