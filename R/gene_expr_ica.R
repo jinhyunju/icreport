@@ -104,7 +104,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
       group.table <- table(groups)     # count member components for each group
-      multi.component.group <- which(group.table >= (n.runs * 0.6)) # get groups with more than 2 members
+      multi.component.group <- which(group.table >= (n.runs * 0.9)) # get groups with more than 2 members
 
       k.update <- length(multi.component.group)
       message("- ",k.update," Replicating Components Estimated \n")

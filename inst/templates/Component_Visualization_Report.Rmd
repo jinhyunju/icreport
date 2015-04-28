@@ -4,13 +4,13 @@
 
 ```{r global_options, include=FALSE}
 # setting global options 
-figure.outpath <- paste(output.path,"/icreport_figures/",prefix,"/",sep="")
+figure.outpath <- paste(output.path,"/icreport_figures/",data.set,"/",sep="")
 opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
 options(warn=-1,width = 100)
 flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, comment = ""}
 if(method == "ica"){
   cat("--------------------------------------------------------------------------------------------------------------","\n")
   cat("Type = Independent Component Analysis Report \n")
@@ -225,7 +225,7 @@ if(method == "ica"){
 
 ### Individual Component Information
 
-```{r Individual_IC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 5}
+```{r Individual_IC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 6}
 if(method == "ica"){
   for( p in 1:dim(ica.result$A)[1]){
           ###################### Plotting without Gene information ########################## 
@@ -237,17 +237,23 @@ if(method == "ica"){
           }
           
           
-          if(!is.null(ica.result$geneinfo)){
+          if(!is.null(ica.result$ordered.geneinfo)){
             # create axis tick positions for chromosomes if gene info is supplied
             chromosomes <- unique(ica.result$ordered.geneinfo$pheno_chr)
             x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
             
-            for(i in 1:length(chromosomes)){
-              j <- chromosomes[i]
-              cat("level = ",i,"\n")
-              match(i, chromosomes)
-              x.axis[1,i] <- min(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
-              x.axis[2,i] <- max(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+            for(k in 1:length(chromosomes)){
+              j <- chromosomes[k]
+              
+              if(is.na(j)){
+                x.axis[1,k] <- max(x.axis[1,]) + 1
+                x.axis[2,k] <- max(ica.result$ordered.geneinfo[,"idx"])
+              } else {
+                x.axis[1,k] <- min(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+                x.axis[2,k] <- max(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])    
+              }
+              
+
             }
             
             x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
@@ -276,10 +282,10 @@ if(method == "ica"){
           } else { # if gene position information is available
             if(!is.null(ica.result$peaks)){
                 # If the peaks are labeled use them 
-                mclust.plots[[1]] <- plot_component_chr(ica.result$S[,i], 
-                                                        geneinfo = ica.result$ordered.geneinfo,
+                mclust.plots[[1]] <- plot_component_chr(ica.result$S[,i, drop = FALSE], 
+                                                        geneinfo.df = ica.result$ordered.geneinfo,
                                                         x.axis = x.axis,
-                                                        plot.title = plot.title, 
+                                                        plot.title = paste(data.set,"_IC#_",i,sep =""), 
                                                         peaks = TRUE, 
                                                         peakresult = ica.result$peaks[[i]])
             } else {
@@ -292,7 +298,7 @@ if(method == "ica"){
 
           }
           # Gene weight histogram plot (Investigating the non-normality of the component )
-          mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram") 
+          #mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram") 
          
           # create a data frame for plotting
           if(!is.null(colnames(ica.result$A)) & !is.null(info.df)){
@@ -378,7 +384,7 @@ if(method == "ica"){
         
          
         
-          layout <- matrix(c(1,1,4,4,
+          layout <- matrix(c(1,1,1,1,
                              2,2,3,3), byrow = T,ncol = 4)
         
           
@@ -420,7 +426,7 @@ if(method == "ica"){
               #cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ", sep ="  "), "\n")
           }
           cat("--------------------------------------------------------------------------------------------------------------","\n")
-        
+          #mclust.plots[[4]] <- NULL
           suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))
 
       
@@ -429,7 +435,7 @@ if(method == "ica"){
 ```
 
 
-```{r Individual_PC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 5}
+```{r Individual_PC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 6}
 if (method == "pca"){
   for( i in 1:plot.pc){
   
@@ -441,12 +447,42 @@ if (method == "pca"){
   mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,
                               "data" = mclust.obj$data )
   
-  # Plot IC loading with peaks labeled in red
-  mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],
-                                      paste(data.set,"_PC#_",i,sep =""))
   
-  mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],
-                                           "Gene Weight Histogram")
+  if(!is.null(pca.result$ordered.geneinfo)){
+    
+    # create axis tick positions for chromosomes if gene info is supplied
+    chromosomes <- unique(pca.result$ordered.geneinfo$pheno_chr)
+    x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
+    
+    for(k in 1:length(chromosomes)){
+      j <- chromosomes[k]
+      x.axis[1,k] <- min(subset(pca.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+      x.axis[2,k] <- max(subset(pca.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
+    }
+    
+    x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
+
+  }
+  
+  
+  if(is.null(pca.result$ordered.geneinfo)){           
+      mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],
+                                      paste(data.set,"_PC#_",i,sep =""))
+    } else { # if gene position information is available
+      
+      mclust.plots[[1]] <- plot_component_chr(pca.result$rotation[,i], 
+                                      geneinfo.df = pca.result$ordered.geneinfo,
+                                      x.axis = x.axis,
+                                      plot.title = paste(data.set,"_PC#_",i,sep =""), 
+                                      peaks = TRUE, 
+                                      peakresult = pca.result$peaks[[i]])
+      
+      
+  }
+           
+  
+  #mclust.plots[[4]] <- plot_component_hist(pca.result$rotation[,i],
+  #                                         "Gene Weight Histogram")
   
   # create a data frame for plotting
   if(!is.null(colnames(pca.result$x)) & !is.null(pca.result$info.df)){
@@ -495,8 +531,8 @@ if (method == "pca"){
   
     coeff.plot.df$mclust <- factor(mclust.obj$classification)
     mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
-      geom_point(size = 3, pch = 20) + theme(legend.position = "none") +
-      xlab("Sample idx") + ylab("PC coefficient") 
+                                geom_point(size = 3, pch = 20) + theme(legend.position = "none") +
+                                xlab("Sample idx") + ylab("PC coefficient") 
     
     mclust.plots[[3]] <- ggplot(coeff.plot.df, 
                                 aes(x = mclust, y = IC, color = mclust)) + 
@@ -511,7 +547,7 @@ if (method == "pca"){
       }
     } 
   
-  layout <- matrix(c(1,1,4,4,
+  layout <- matrix(c(1,1,1,1,
                      2,2,3,3), byrow = T,ncol = 4)
   
   
@@ -521,7 +557,7 @@ if (method == "pca"){
   }
   
   
-  cat("-------------------------------------------------------------------------------------------------------------------","\n")
+  cat("-----------------------------------------------------------------------------------------------------------------","\n")
   if (i %in% unique(pca.result$cov.corr.idx$PC)){
     pc.info <- data.frame(row.names = paste("PC",i,sep = ""), 
                       "Variance_Percent" = pca.result$var.percent[i],
@@ -543,7 +579,7 @@ if (method == "pca"){
     print(gene.table)
     rm(pc.info, gene.table)
   }
-  cat("-------------------------------------------------------------------------------------------------------------------","\n")
+  cat("-----------------------------------------------------------------------------------------------------------------","\n")
   
   
   suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))

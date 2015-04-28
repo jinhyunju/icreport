@@ -34,6 +34,9 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     # calculating percent variance each component explains
     pca.result$var.percent <- (pca.result$sdev^2 / sum(pca.result$sdev^2)) * 100
 
+    
+    pca.result$peaks <- apply(pca.result$rotation, 2, peak_detection)
+    
     if(!is.null(check.covars) & !is.null(info.df)){
       message("Checking association between covariates and components\n")
       # Anova analysis for covariates vs ICA weights (A matrix)

@@ -36,10 +36,10 @@ plot_component_hist <- function(s, plot.title){
 #' @examples
 #' R code here showing how your function works
 #' @export
-plot_component <- function(s, 
-                           plot.title, 
-                           peaks = FALSE, 
-                           peakresult = NULL, 
+plot_component <- function(s,
+                           plot.title,
+                           peaks = FALSE,
+                           peakresult = NULL,
                            gene.names = NULL){
   if(peaks == FALSE){
     G <- length(s)
@@ -59,9 +59,9 @@ plot_component <- function(s,
     #plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
     plot.sig <- data.frame(idx = rank(-s, ties.method = "first"), sig = s, peaks = peak.idx)
     plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
-    p <- ggplot(plot.sig, aes(x=idx, y= sig)) + 
+    p <- ggplot(plot.sig, aes(x=idx, y= sig)) +
       geom_linerange(aes(ymin=0, ymax=sig, colour = factor(peaks))) +
-      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) + 
+      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) +
       xlab("Genes sorted by weights") + ylab("Gene Weights")+
       labs(title = plot.title) +theme(legend.position="none")
     return(p)
@@ -171,31 +171,50 @@ ggplot_add_theme <- function(inputplot){
 #' Plotting function that indicates gene position on chromosome
 #'
 #' The function generates a plot with gene weights for individual ICs according
-#' to their position on each chromosome. 
+#' to their position on each chromosome.
 #'
 #' @export
-plot_component_chr <- function(s, 
+plot_component_chr <- function(s,
                                geneinfo.df,
                                x.axis,
-                               plot.title, 
-                               peaks = FALSE, 
+                               plot.title,
+                               peaks = FALSE,
                                peakresult = NULL){
-  geneinfo.df$loading <- s
-  geneinfo.df$peaks <- 1 * (geneinfo.df$phenotype %in% names(peakresult))
-  #geneinfo.df <- geneinfo.df[order(nchar(geneinfo.df$pheno_chr), geneinfo.df$pheno_chr, geneinfo.df$loading),]
-  geneinfo.df$idx <- c(1:nrow(geneinfo.df))
+  geneinfo.df$loading <- s[as.character(geneinfo.df$phenotype),]
+  geneinfo.df$peaks <- 1 * ( as.character(geneinfo.df$phenotype) %in% names(peakresult) )
+  #1 * (abs(geneinfo.df$loading) > (2 * sd(geneinfo.df$loading)))
   n.peaks <- sum(geneinfo.df$peaks)
   plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
-  
-  p <- ggplot(geneinfo.df, aes(x = idx, y = loading)) + 
-    geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) + 
+
+#  rect_left <- x.axis[1,seq(1, ncol(x.axis), by = 2)]
+#  rect_right <- x.axis[2,seq(1, ncol(x.axis), by = 2)]
+  rect_left <- x.axis[1,]
+  rect_right <- x.axis[2,]
+
+  rects1 <- data.frame(
+    xstart = rect_left,
+    xend = rect_right,
+    idx = rep(0),
+    loading = rep(0),
+    fill.col = factor(rep(c(0,1), length.out = length(rect_left)))
+  )
+
+
+  p <- ggplot(geneinfo.df, aes(x = idx, y = loading)) +
+    geom_rect(data = rects1, aes(xmin = xstart,
+                                 xmax = xend,
+                                 ymin = -Inf,
+                                 ymax = Inf,
+                                 fill = fill.col), alpha = 0.35) +
+    geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) +
     theme_bw() +
-    geom_vline(xintercept=c(0,x.axis[2,]), linetype="dotted") +
-    scale_x_continuous("",breaks=x.axis[3,],labels=unique(geneinfo.df$pheno_chr), expand = c(0, 0))+
-    scale_y_continuous(expand = c(0, 0)) + labs(title = plot.title) + 
+    #geom_vline(xintercept=c(0,x.axis[2,]), linetype="dotted") +
+    scale_x_continuous("Gene Chromosome Location",breaks=x.axis[3,],labels=unique(geneinfo.df$pheno_chr))+
+    scale_y_continuous(expand = c(0, 0)) + labs(title = plot.title) +
     scale_color_manual(values=c("grey", "red")) +
-    xlab("Gene Chromosome Location") + ylab("Gene Weights") +
+    scale_fill_manual(values=c("skyblue", NA)) +
+    ylab("Gene Weights") +
     theme(legend.position="none")
-  
+
   return(p)
 }
