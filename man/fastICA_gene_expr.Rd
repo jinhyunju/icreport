@@ -8,20 +8,29 @@ fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
   w.init = NULL)
 }
 \arguments{
-\item{scale.pheno}{Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}}
+\item{X}{Phenotype matrix with diemnsions g x N}
 
-\item{phenotype.mx}{Phenotype matrix with diemnsions g x N   \code{phenotype.mx}}
+\item{n.comp}{Number of components to be estimated or method to estimate it.}
 
-\item{k.est}{Number of components to be estimated or method to estimate it. \code{k.est}}
+\item{fun}{Function to be used in ICA estimation}
+
+\item{alpha}{alpha for ICA, should be in range [1,2].}
+
+\item{scale.pheno}{Logical value specifying the scaling of rows of X.}
+
+\item{maxit}{Maximum iterations}
+
+\item{tol}{Threshold for convergence}
+
+\item{verbose}{If TRUE details of the estimation process are shown.}
+
+\item{w.init}{Initial value for W, if left unspecified random numbers will be used.}
 }
 \value{
 List with the following entries.
 }
 \description{
 Minor tweak to fastICA to make it faster
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

@@ -5,6 +5,7 @@
 #' If scaling option is true it will scale all rows to have unit standard deviation.
 #'
 #' @param phenotype.mx Phenotype matrix with a dimension of g X N  \code{phenotype.mx}
+#' @param scale.pheno If TRUE phenotypes are scaled to have unit standard deviation.
 #' @return Pre-processed phenotype matrix
 #' @keywords keywords
 #'

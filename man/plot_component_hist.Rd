@@ -16,8 +16,5 @@ ggplot object
 \description{
 ggplot function for plotting a histogram for a single component
 }
-\examples{
-R code here showing how your function works
-}
 \keyword{keywords}
 

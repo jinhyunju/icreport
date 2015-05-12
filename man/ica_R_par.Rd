@@ -6,20 +6,27 @@
 ica_R_par(X, n.comp, tol, fun, alpha, maxit, verbose, w.init)
 }
 \arguments{
-\item{phenotype.mx}{Phenotype matrix with diemnsions g x N   \code{phenotype.mx}}
+\item{X}{Phenotype matrix with diemnsions g x N}
 
-\item{k.est}{Number of components to be estimated or method to estimate it. \code{k.est}}
+\item{n.comp}{Number of components to be estimated or method to estimate it.}
 
-\item{scale.pheno}{Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}}
+\item{tol}{Threshold for convergence}
+
+\item{fun}{Function to be used in ICA estimation}
+
+\item{alpha}{alpha for ICA, should be in range [1,2].}
+
+\item{maxit}{Maximum iterations}
+
+\item{verbose}{If TRUE details of the estimation process are shown.}
+
+\item{w.init}{Initial value for W, if left unspecified random numbers will be used.}
 }
 \value{
 List with the following entries.
 }
 \description{
 Adopted from fastICA package
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

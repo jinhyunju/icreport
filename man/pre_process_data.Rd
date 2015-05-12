@@ -7,6 +7,8 @@ pre_process_data(phenotype.mx, scale.pheno = TRUE)
 }
 \arguments{
 \item{phenotype.mx}{Phenotype matrix with a dimension of g X N  \code{phenotype.mx}}
+
+\item{scale.pheno}{If TRUE phenotypes are scaled to have unit standard deviation.}
 }
 \value{
 Pre-processed phenotype matrix

@@ -16,8 +16,5 @@ ggplot object
 \description{
 ggplot function for plotting coefficients for a single IC
 }
-\examples{
-R code here showing how your function works
-}
 \keyword{keywords}
 

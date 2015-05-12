@@ -3,22 +3,23 @@
 \alias{plot_component}
 \title{Plotting the gene weights of a single component}
 \usage{
-plot_component(s, plot.title, peaks = FALSE, peakresult = NULL,
-  gene.names = NULL)
+plot_component(s, plot.title, peaks = FALSE, peakresult = NULL)
 }
 \arguments{
-\item{s}{A single component  \code{s}}
+\item{s}{A single component}
 
-\item{plot.title}{Character title of the plot\code{plot.title}}
+\item{plot.title}{Character title of the plot}
+
+\item{peaks}{TRUE shows peaks in red, FALSE leaves everything black}
+
+\item{peakresult}{Pre-calculated peak positions, if not supplied peaks will be
+defined as values lying out of 2 standard deviations.}
 }
 \value{
 ggplot object
 }
 \description{
 ggplot function for plotting a single component
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

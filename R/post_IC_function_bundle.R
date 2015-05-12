@@ -4,8 +4,9 @@
 #' with a dataframe of measured covariates to test the association
 #' between them.
 #'
-#' @param A The mixing matrix estimated through ICA   \code{A}
-#' @param info.df A dataframe that holds the measured covariates for each sample \code{info.df}
+#' @param input.A The mixing matrix estimated through ICA
+#' @param info.input A dataframe that holds the measured covariates for each sample
+#' @param covar.names names of the covariates that should be used for association testing
 #' @return output A matrix holding the p-values for each indepenedent component and covariate pair.
 #' @keywords keywords
 #'
@@ -39,15 +40,12 @@ component_association_test <- function(input.A, info.input, covar.names){
 #' with a dataframe of measured covariates to test the association
 #' between them.
 #'
-#' @param s A single column of the S matrix with dimensions 1 x g  \code{s}
+#' @param ica.input.s A single column of the S matrix with dimensions 1 x g  \code{s}
 #' @return A vector that contains the gene weights of the signficant peaks for a single independent component sorted
 #' in the decreasing order of absolute magnitude.
 #' @keywords keywords
 #'
 #' @export
-#'
-#' @examples
-#' R code here showing how your function works
 peak_detection <- function(ica.input.s){
   peaks.idx <- which(abs(ica.input.s) > (2 * sd(ica.input.s))) # get the peak indexes
   peaks <- ica.input.s[names(sort(abs(ica.input.s[peaks.idx]), decreasing = T))]
@@ -64,6 +62,7 @@ peak_detection <- function(ica.input.s){
 #' @param a A single row of the A matrix with dimensions N x 1 \code{a}
 #' @return A single number of how much variantion is explained by a single IC.
 #'
+#' @export
 IC_variance_calc <- function(s, a){
   var.IC <- sum(  (as.matrix(s) %*% t(as.matrix(a) ) )^2)
   return(var.IC)

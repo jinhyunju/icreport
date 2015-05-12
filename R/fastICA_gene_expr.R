@@ -2,17 +2,20 @@
 #'
 #' Minor tweak to fastICA to make it faster
 #'
-#' @param phenotype.mx Phenotype matrix with diemnsions g x N   \code{phenotype.mx}
-#' @param k.est Number of components to be estimated or method to estimate it. \code{k.est}
-#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}
+#' @param X Phenotype matrix with diemnsions g x N
+#' @param n.comp Number of components to be estimated or method to estimate it.
+#' @param fun Function to be used in ICA estimation
+#' @param alpha alpha for ICA, should be in range [1,2].
+#' @param scale.pheno Logical value specifying the scaling of rows of X.
+#' @param maxit Maximum iterations
+#' @param tol Threshold for convergence
+#' @param verbose If TRUE details of the estimation process are shown.
+#' @param w.init Initial value for W, if left unspecified random numbers will be used.
 #' @return List with the following entries.
 #' @keywords keywords
 #'
-#' @import MASS
 #' @export
 #'
-#' @examples
-#' R code here showing how your function works
 fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
                              scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE, w.init=NULL) {
     dd <- dim(X)       # dimensions g x N
@@ -58,7 +61,7 @@ fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
     # reconstructing data before output
     w <- a %*% t(K)    # k x k %*% k x N = k x N
     S <- w %*% X    # k x N %*% N x g = k x g
-    A <- t(w) %*% ginv(w %*% t(w)) # N x k x k x k  = N x k
+    A <- t(w) %*% MASS::ginv(w %*% t(w)) # N x k x k x k  = N x k
 
     X <- t(X) # g X N
     W <- t(a) # N x k

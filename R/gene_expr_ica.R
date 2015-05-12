@@ -20,17 +20,14 @@
 #'
 #' @import mclust
 #' @export
-#'
-#' @examples
-#' R code here showing how your function works
 gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
                     k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3,
                     n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05,
-                    similarity.measure = "peaks", ...){
+                    similarity.measure = "peaks"){
 
     if(is.null(phenotype.mx)){
-        message("Error: Phenotype matrix is missing \n")
-        break;
+        stop("Error: Phenotype matrix is missing \n")
+
     }
 
     if(is.null(colnames(phenotype.mx))){
@@ -54,7 +51,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     if(is.null(k.est)){
       svd.pheno <- svd(phenotype.mx)
       percent <- (cumsum(svd.pheno$d) /sum(svd.pheno$d)) * 100
-      k.est <- which(percent > 99)[1]
+      k.est <- which(percent > 90)[1]
     }
 
     ica.list <- list()
@@ -71,12 +68,6 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
                                                                alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
                                                                maxit=500, tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
 
-#      ica.list <- parallel::mclapply(1:n.runs,function(x) fastICA::fastICA(phenotype.mx, k.est,
-#                                                               alg.typ = "parallel",method = "R",
-#                                                               fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-#                                                               alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-#                                                               maxit=500,tol = 0.0001, verbose = FALSE), mc.cores = n.cores)
-
       for(i in 1:length(ica.list)){
 
         ica.list[[i]]$peak.mx <- apply(ica.list[[i]]$S, 2, function(x) 1*(abs(x) > 2*sd(x)))
@@ -89,8 +80,12 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       peak.matrix <- do.call(cbind, lapply(ica.list, function(x) x$peak.mx)) # combine all peak position matrices as well
 
       if(similarity.measure == "peaks"){
-        peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
-        cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
+        if(0 %in% apply(peak.matrix, 2, sum)){
+          cor.mx <- cor(combined.S)
+        } else{
+          peak.component <- peak.matrix * combined.S             # do element-wise multiplication to only save values for peaks
+          cor.mx <- cor(peak.component) # calculate correlation between components (only with their peak values)
+        }
       } else {
         cor.mx <- cor(combined.S)
       }
@@ -143,12 +138,6 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
                                       alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
                                       maxit=500, tol = 0.0001, verbose = TRUE)
       k.update <- k.est
-#      ica.result <- fastICA::fastICA(phenotype.mx, k.est,
-#                                     alg.typ = "parallel",method = "R",
-#                                     fun = "logcosh" ,                            # function that should be used to estimate ICs, default is logcosh
-#                                     alpha = 1,row.norm = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-#                                     maxit=500,tol = 0.0001, verbose = FALSE)
-
     }
 
     rownames(ica.result$S) <- rownames(phenotype.mx)                   # Setting appropriate names for signals and mixing matrix
@@ -253,30 +242,30 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
     # which IC has more than 1 predicted clusters?
-    multi.clust <- which(ica.result$ica.stat.df$n.clust > 1)
+#    multi.clust <- which(ica.result$ica.stat.df$n.clust > 1)
 
     # get union between multi clusters and correlated ICs
-    hf.vec <- sort(union(multi.clust,correlated.ic))
+#    hf.vec <- sort(union(multi.clust,correlated.ic))
 
-    hf.vec.names <-paste("IC",hf.vec,sep="")
+#    hf.vec.names <-paste("IC",hf.vec,sep="")
     # name the ICs as IC#
-    n.hf <- length(hf.vec.names)
-    message("- ",n.hf," out of ",k.update," ICs marked as confounding factors = \n")
-    cat(hf.vec.names,"\n\n")
+#    n.hf <- length(hf.vec.names)
+#    message("- ",n.hf," out of ",k.update," ICs marked as confounding factors = \n")
+#    cat(hf.vec.names,"\n\n")
 
     # Creating a matrix indicating which genes are influenced by a given IC
-    ica.result$ica.confeti.mx <- matrix(0,nrow = dim(ica.result$S)[1], ncol = length(hf.vec))
+    ica.result$ica.confeti.mx <- matrix(0,nrow = nrow(ica.result$S), ncol = ncol(ica.result$S))
     # rownames = gene names
     rownames(ica.result$ica.confeti.mx) <- rownames(ica.result$S)
     # column names = correlated ICs + multi cluster ICs
-    colnames(ica.result$ica.confeti.mx) <- hf.vec.names
+    colnames(ica.result$ica.confeti.mx) <- colnames(ica.result$S)
 
     #message("Creating CONFETI matrix for regression \n")
-    for ( i in 1:length(hf.vec)){
-        k <- hf.vec[i]
-        ic.name <- hf.vec.names[i]
-        peak.temp <- names(ica.result$peaks[[k]])
-        ica.result$ica.confeti.mx[peak.temp,ic.name] <- 1
+    for ( i in 1:ncol(ica.result$S)){
+#        k <- hf.vec[i]
+#        ic.name <- hf.vec.names[i]
+        peak.temp <- names(ica.result$peaks[[i]])
+        ica.result$ica.confeti.mx[peak.temp,i] <- 1
     }
     message("------ Process completed without any interuptions ------- :) \n")
     attr(ica.result, 'method') <- "ica"

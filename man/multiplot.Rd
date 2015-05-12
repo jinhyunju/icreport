@@ -3,14 +3,14 @@
 \alias{multiplot}
 \title{Plotting multiple ggplots}
 \usage{
-multiplot(..., plotlist = NULL, file, cols = 1, layout = NULL)
+multiplot(plotlist = NULL, layout = NULL, cols = 1)
 }
 \arguments{
 \item{plotlist}{list of plots}
 
-\item{cols}{number of columns}
-
 \item{layout}{layout matrix for custom layout}
+
+\item{cols}{number of columns}
 }
 \value{
 single plot object
@@ -19,9 +19,6 @@ single plot object
 Equivalent function for ggplots to setting par(mfrow=c(x,y)) for
 basic R plots.
 Adapted from : http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

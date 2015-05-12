@@ -3,12 +3,15 @@
 #' Generating a HTML report from a ICA or PCA list object.
 #'
 #' @param input ICA or PCA result list created by either \code{gene_expr_ica()} or \code{gene_expr_pca()}.
-#' @param n.comps Number of principal components to plot. Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.
+#' @param n.comps Number of principal components to plot.
+#'        Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.
 #' @param prefix Output filename prefix. The output file will be named
 #'        "prefix_ICA_summary.html".
+#' @param geneinfo.df Dataframe that contains positions of the genes.
 #' @param output.path Directory path for generating the output HTML file.
 #'        default is set to current working directory.
-#' @param file.ext File extension to be used for saved plots. Default is set to png for html reports.
+#' @param file.ext File extension to be used for saved plots.
+#'        Default is set to png for html reports.
 #'        Note that if you use pdf plots for html files they will not show up in your report.
 #' @return output HTML report.
 #' @keywords keywords
@@ -16,12 +19,8 @@
 #' @import ggplot2
 #' @import knitr
 #' @import rmarkdown
-#' @import gtools
 #'
 #' @export
-#'
-#' @examples
-#' R code here showing how your function works
 report2me <- function(input = NULL,
                       n.comps = NULL,
                       prefix = NULL,
@@ -42,6 +41,7 @@ report2me <- function(input = NULL,
 
     }
 
+    phenotype <- NULL # avoid R CMD check NOTES
     method <- attr(input, 'method')
 
     if(!is.null(geneinfo.df)){
@@ -112,18 +112,35 @@ report2me <- function(input = NULL,
         }
 
         if(!is.null(geneinfo.df)){
-          cat("Checking if gene information exists for every gene\n")
+          message("Checking if gene information exists for every gene\n")
 
-          geneposition.df <- subset(geneinfo.df, phenotype %in% rownames(pca.result$rotation))
+          genesinexpr <- rownames(pca.result$rotation)
+          geneposition.df <- subset(geneinfo.df, phenotype %in% genesinexpr)
 
-          pca.result$ordered.geneinfo <- geneposition.df[order(nchar(geneposition.df$pheno_chr),geneposition.df$pheno_chr),]
-          pca.result$ordered.geneinfo$idx <- c(1:nrow(pca.result$ordered.geneinfo))
+          n.genesinfo <- sum(unique(geneposition.df$phenotype) %in% genesinexpr)
 
-          if(nrow(pca.result$ordered.geneinfo) != nrow(pca.result$rotation)){
-            stop("Missing gene position information");
+          if(n.genesinfo != nrow(pca.result$rotation)){
+
+            message("Missing some gene position information, NA category created")
+            gene.names <- data.frame("phenotype" = genesinexpr)
+            merged.geneinfo <- merge(gene.names, geneposition.df, all = TRUE)
+
+            # order entries according to chr number and position
+            merged.geneinfo <- merged.geneinfo[order(match(merged.geneinfo$pheno_chr, chr.ordered), merged.geneinfo$pheno_start),]
+
+            #removing potential duplicate entries
+            geneposition.df <- merged.geneinfo[!duplicated(merged.geneinfo$phenotype),]
           } else {
-            cat("All genes have chromosome and position information\n")
+
+            message("All genes have chromosome and position information\n")
+            geneposition.df <- geneposition.df[order(match(geneposition.df$pheno_chr, chr.ordered), geneposition.df$pheno_start),]
+            geneposition.df <- geneposition.df[!duplicated(geneposition.df$phenotype),]
           }
+
+
+          pca.result$ordered.geneinfo <- geneposition.df
+          pca.result$ordered.geneinfo$idx <- c(1:nrow(pca.result$ordered.geneinfo))
+          rm(geneposition.df)
 
         }
 

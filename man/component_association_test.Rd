@@ -6,9 +6,11 @@
 component_association_test(input.A, info.input, covar.names)
 }
 \arguments{
-\item{A}{The mixing matrix estimated through ICA   \code{A}}
+\item{input.A}{The mixing matrix estimated through ICA}
 
-\item{info.df}{A dataframe that holds the measured covariates for each sample \code{info.df}}
+\item{info.input}{A dataframe that holds the measured covariates for each sample}
+
+\item{covar.names}{names of the covariates that should be used for association testing}
 }
 \value{
 output A matrix holding the p-values for each indepenedent component and covariate pair.

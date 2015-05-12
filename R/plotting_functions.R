@@ -9,13 +9,11 @@
 #' @keywords keywords
 #'
 #'
-#' @examples
-#' R code here showing how your function works
 #' @export
 plot_component_hist <- function(s, plot.title){
   G <- length(s)
   plot.sig <- data.frame(idx = c(1:G), sig = s)
-  p <- ggplot(plot.sig, aes(x = sig)) +geom_histogram(aes(y = ..density..)) + xlab("Gene Weights") +
+  p <- ggplot(plot.sig, aes_string(x = "sig")) +geom_histogram(aes_string(y = "..density..")) + xlab("Gene Weights") +
     labs(title = plot.title) + geom_density() + ylab("") + coord_flip()
   return(p)
 
@@ -26,37 +24,42 @@ plot_component_hist <- function(s, plot.title){
 #'
 #' ggplot function for plotting a single component
 #'
-#' @param s A single component  \code{s}
-#' @param plot.title Character title of the plot\code{plot.title}
+#' @param s A single component
+#' @param plot.title Character title of the plot
+#' @param peaks TRUE shows peaks in red, FALSE leaves everything black
+#' @param peakresult Pre-calculated peak positions, if not supplied peaks will be
+#'        defined as values lying out of 2 standard deviations.
 #' @return ggplot object
 #'
 #' @keywords keywords
 #'
-#'
-#' @examples
-#' R code here showing how your function works
 #' @export
 plot_component <- function(s,
                            plot.title,
                            peaks = FALSE,
-                           peakresult = NULL,
-                           gene.names = NULL){
+                           peakresult = NULL){
+  sig <- NULL
+  idx <- NULL # both to avoid R CMD check NOTES
   if(peaks == FALSE){
     G <- length(s)
-    #plot.sig <- data.frame(idx = seq(1,G,1), sig = s)
+
     plot.sig <- data.frame(idx = rank(-s, ties.method = "first"), sig = s)
-    p <- ggplot(plot.sig, aes(x=idx, y= sig)) +
+    p <- ggplot(plot.sig, aes_string(x= "idx", y= "sig")) +
       geom_linerange(aes(ymin=0, ymax=sig)) +
       xlab("Gene index") +
       ylab("Gene Weights")+ labs(title = plot.title)
     return(p)
   } else {
     G <- length(s)
+
     colnames(s) <- "sig"
+
     significant.peaks <- names(peakresult)
+
     n.peaks <- length(peakresult)
-    peak.idx <- 1 * (gene.names %in% significant.peaks)
-    #plot.sig <- data.frame(idx = c(1:G), sig = s, peaks = peak.idx)
+
+    peak.idx <- 1 * (rownames(s) %in% significant.peaks)
+
     plot.sig <- data.frame(idx = rank(-s, ties.method = "first"), sig = s, peaks = peak.idx)
     plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
     p <- ggplot(plot.sig, aes(x=idx, y= sig)) +
@@ -80,17 +83,22 @@ plot_component <- function(s,
 #' @keywords keywords
 #'
 #' @export
-#'
-#' @examples
-#' R code here showing how your function works
 plot_coeff_w_legend <- function(info_input, k.col){
 
   if(k.col != "none"){
-    ggplot(info_input, aes(x=idx, y= IC)) +
-      geom_point(aes_string(colour = k.col),shape=20, size = 3) +
-      xlab("sample") + ylab("IC coefficient")
-  } else {
-    ggplot(info_input, aes(x=idx, y= IC)) +
+    plot.factor <- factor(info_input[,k.col])
+    number.of.levels <- length(levels(plot.factor))
+      if(number.of.levels < 10){
+        ggplot(info_input, aes_string(x="idx", y= "IC")) +
+          geom_point(aes_string(colour = k.col),shape=20, size = 3) +
+          xlab("sample") + ylab("IC coefficient")
+      } else {
+        ggplot(info_input, aes_string(x= "idx", y= "IC")) +
+          geom_point(aes_string(colour = k.col),shape=20, size = 3) +
+          xlab("sample") + ylab("IC coefficient") + theme(legend.position = "none")
+      }
+    } else {
+    ggplot(info_input, aes_string(x="idx", y= "IC")) +
       geom_point(aes(color = "black"),shape=20, size = 3) +
       xlab("sample") + ylab("IC coefficient")
   }
@@ -110,16 +118,14 @@ plot_coeff_w_legend <- function(info_input, k.col){
 #'
 #' @keywords keywords
 #'
-#' @export
+#' @import grid
 #'
-#' @examples
-#' R code here showing how your function works
-multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-  require(grid)
+#' @export
+multiplot <- function(plotlist=NULL, layout=NULL, cols=1) {
 
   # Make a list from the ... arguments and plotlist
-  plots <- c(list(...), plotlist)
-
+  #plots <- c(list(...), plotlist)
+  plots <- plotlist
   numPlots = length(plots)
 
   # If layout is NULL, then use 'cols' to determine layout
@@ -136,15 +142,15 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
   } else {
     # Set up the page
-    grid.newpage()
-    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    grid::grid.newpage()
+    grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
 
     # Make each plot, in the correct location
     for (i in 1:numPlots) {
       # Get the i,j matrix positions of the regions that contain this subplot
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
 
-      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+      print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
                                       layout.pos.col = matchidx$col))
     }
   }
@@ -156,6 +162,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 #'
 #' @param inputplot A ggplot object.  \code{s}
 #' @return A ggplot object with a custom theme added
+#' @export
 ggplot_add_theme <- function(inputplot){
   inputplot <- inputplot + theme(axis.text = element_text(size=12),
                                  axis.title=element_text(size=14,face="bold"),
@@ -173,21 +180,39 @@ ggplot_add_theme <- function(inputplot){
 #' The function generates a plot with gene weights for individual ICs according
 #' to their position on each chromosome.
 #'
+#' @param s A single component
+#' @param geneinfo.df Gene position information dataframe
+#' @param x.axis Positions of the chromosome borders for coloring.
+#' @param plot.title Character title of the plot
+#' @param peaks TRUE shows peaks in red, FALSE leaves everything black
+#' @param peakresult Pre-calculated peak positions, if not supplied peaks will be
+#'        defined as values lying out of 2 standard deviations.
+#'
 #' @export
 plot_component_chr <- function(s,
                                geneinfo.df,
                                x.axis,
                                plot.title,
-                               peaks = FALSE,
+                               peaks = TRUE,
                                peakresult = NULL){
   geneinfo.df$loading <- s[as.character(geneinfo.df$phenotype),]
-  geneinfo.df$peaks <- 1 * ( as.character(geneinfo.df$phenotype) %in% names(peakresult) )
-  #1 * (abs(geneinfo.df$loading) > (2 * sd(geneinfo.df$loading)))
+  loading <- NULL # avoid R CMD check NOTES
+
+  if(peaks == TRUE){
+    if(is.null(peakresult)){
+      geneinfo.df$peaks <- 1 * (abs(geneinfo.df$loading) > (2 * sd(geneinfo.df$loading)))
+    } else {
+      geneinfo.df$peaks <- 1 * ( as.character(geneinfo.df$phenotype) %in% names(peakresult) )
+    }
+
+  } else {
+      geneinfo.df$peaks <- rep(0, nrow(geneinfo.df))
+  }
+
+
   n.peaks <- sum(geneinfo.df$peaks)
   plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
 
-#  rect_left <- x.axis[1,seq(1, ncol(x.axis), by = 2)]
-#  rect_right <- x.axis[2,seq(1, ncol(x.axis), by = 2)]
   rect_left <- x.axis[1,]
   rect_right <- x.axis[2,]
 
@@ -200,12 +225,12 @@ plot_component_chr <- function(s,
   )
 
 
-  p <- ggplot(geneinfo.df, aes(x = idx, y = loading)) +
-    geom_rect(data = rects1, aes(xmin = xstart,
-                                 xmax = xend,
-                                 ymin = -Inf,
-                                 ymax = Inf,
-                                 fill = fill.col), alpha = 0.35) +
+  p <- ggplot(geneinfo.df, aes_string(x = "idx", y = "loading")) +
+    geom_rect(data = rects1, aes_string(xmin = "xstart",
+                                 xmax = "xend",
+                                 ymin = "-Inf",
+                                 ymax = "Inf",
+                                 fill = "fill.col"), alpha = 0.35) +
     geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) +
     theme_bw() +
     #geom_vline(xintercept=c(0,x.axis[2,]), linetype="dotted") +
@@ -217,4 +242,43 @@ plot_component_chr <- function(s,
     theme(legend.position="none")
 
   return(p)
+}
+
+#' Function that generates the x axis ticks for chromosome positions
+#'
+#' The function takes in a gene position info data frame with the following columns:
+#' "phenotypes" holding the names of the genes used in the analysis (rownames of phenotype.mx)
+#' "pheno_chr" holding the chromosome each gene belongs to
+#' "pheno_start" the starting position of a given gene
+#' "pheno_end" the end position of a given gene
+#' "idx" a non-overlapping index that shows orders the genes based on their position, which goes from
+#' 1 to number of genes.
+#'
+#' @param geneinfo.df dataframe that holds the position of the genes.
+#'
+#' @export
+chr_axis_creator <- function(geneinfo.df){
+  if(is.null(geneinfo.df$idx)){
+    stop("index is missing in the geneinfo dataframe. Please assign indexes first")
+  }
+  pheno_chr <- NULL # to get rid of R CMD check NOTES
+  chromosomes <- unique(geneinfo.df$pheno_chr)
+  x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
+
+  for(k in 1:length(chromosomes)){
+    j <- chromosomes[k]
+
+    if(is.na(j)){
+      x.axis[1,k] <- max(x.axis[1,]) + 1
+      x.axis[2,k] <- max(geneinfo.df[,"idx"])
+    } else {
+      x.axis[1,k] <- min(subset(geneinfo.df, pheno_chr == j)[,"idx"])
+      x.axis[2,k] <- max(subset(geneinfo.df, pheno_chr == j)[,"idx"])
+    }
+
+
+  }
+
+  x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
+  return (x.axis)
 }

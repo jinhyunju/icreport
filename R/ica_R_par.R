@@ -2,16 +2,19 @@
 #'
 #' Adopted from fastICA package
 #'
-#' @param phenotype.mx Phenotype matrix with diemnsions g x N   \code{phenotype.mx}
-#' @param k.est Number of components to be estimated or method to estimate it. \code{k.est}
-#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx. \code{scale.pheno}
+#' @param X Phenotype matrix with diemnsions g x N
+#' @param n.comp Number of components to be estimated or method to estimate it.
+#' @param fun Function to be used in ICA estimation
+#' @param alpha alpha for ICA, should be in range [1,2].
+#' @param maxit Maximum iterations
+#' @param tol Threshold for convergence
+#' @param verbose If TRUE details of the estimation process are shown.
+#' @param w.init Initial value for W, if left unspecified random numbers will be used.
 #' @return List with the following entries.
 #' @keywords keywords
 #'
 #' @export
 #'
-#' @examples
-#' R code here showing how your function works
 ica_R_par <- function (X, n.comp, tol, fun, alpha, maxit, verbose, w.init) {
   Diag <- function(d) if(length(d) > 1L) diag(d) else as.matrix(d)
   n <- nrow(X)

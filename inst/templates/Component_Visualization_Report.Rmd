@@ -87,24 +87,28 @@ if(method == "ica"){
                                    aes(x = N.peaks,group = corr.ic)) + 
                                    geom_bar(aes(fill = corr.ic)) + 
                                    scale_fill_manual(values=c("grey50","darkred")) + 
-                                   xlab("Number of Peaks") + ylab("Number of ICs")
+                                   xlab("Number of Peaks") + ylab("Number of ICs") 
     
       summary.plots[[4]] <- ggplot(ica.result$ica.stat.df,
                                    aes(x = n.clust,group = corr.ic)) + 
                                    geom_bar(aes(fill= corr.ic)) + 
                                    scale_fill_manual(values=c("grey50","darkred")) + 
-                                   xlab("Predicted of Clusters") + ylab("Number of ICs")
-    
+                                   xlab("Predicted of Clusters") + ylab("Number of ICs") 
+      
       summary.plots[[5]] <- ggplot(ica.result$ica.stat.df,
                                    aes(x = percent.var,group = corr.ic)) + 
                                    geom_bar(aes(fill= corr.ic)) + 
                                    scale_fill_manual(values=c("grey50","darkred")) + 
-                                   xlab("Variance(%) Explained") + ylab("Number of ICs")
-    
-    
+                                   xlab("Variance(%) Explained") + ylab("Number of ICs") 
+  
       for( p in 1:length(summary.plots)){
-          summary.plots[[p]] <- ggplot_add_theme(summary.plots[[p]])
+        summary.plots[[p]] <- ggplot_add_theme(summary.plots[[p]])
           
+      }
+      
+      for( p in 3:5 ){
+        summary.plots[[p]] <- summary.plots[[p]] + 
+          theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
       }
       
   }
@@ -176,6 +180,11 @@ if (method == "pca"){
                                       geom_bar(stat = 'identity',col = "black", width = .5) 
       }
   
+    summary.plots[[3]] <- summary.plots[[3]] + 
+                          theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+    summary.plots[[4]] <- summary.plots[[4]] + 
+                          theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+  
   }
   
   
@@ -208,6 +217,7 @@ if (method == "pca"){
   multiplot(plotlist = list(summary.plots[[3]], summary.plots[[4]]),cols = 2)
 
   }
+  x.axis <- chr_axis_creator(pca.result$ordered.geneinfo)
 }
 
 ```
@@ -218,6 +228,14 @@ if(method == "ica"){
     if(length(covariates) > 6){
           multiplot(plotlist = list(summary.plots[[1]],summary.plots[[2]]), cols = 1)
     }
+  }
+
+  
+  if(!is.null(ica.result$ordered.geneinfo)){
+    # create axis tick positions for chromosomes if gene info is supplied
+    # the same axis tick positions are used for every plot so it only needs to be calculated once
+    x.axis <- chr_axis_creator(ica.result$ordered.geneinfo)
+
   }
 }
 ```
@@ -237,28 +255,7 @@ if(method == "ica"){
           }
           
           
-          if(!is.null(ica.result$ordered.geneinfo)){
-            # create axis tick positions for chromosomes if gene info is supplied
-            chromosomes <- unique(ica.result$ordered.geneinfo$pheno_chr)
-            x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
-            
-            for(k in 1:length(chromosomes)){
-              j <- chromosomes[k]
-              
-              if(is.na(j)){
-                x.axis[1,k] <- max(x.axis[1,]) + 1
-                x.axis[2,k] <- max(ica.result$ordered.geneinfo[,"idx"])
-              } else {
-                x.axis[1,k] <- min(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
-                x.axis[2,k] <- max(subset(ica.result$ordered.geneinfo, pheno_chr == j)[,"idx"])    
-              }
-              
 
-            }
-            
-            x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
-  
-          }
           
           # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
           mclust.obj <- suppressMessages(mclust::Mclust(ica.result$A[i,], modelNames = "V"))
@@ -271,7 +268,6 @@ if(method == "ica"){
                 # If the peaks are labeled use them 
                 mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
                                                     peakresult = ica.result$peaks[[i]], 
-                                                    gene.names = rownames(ica.result$S),
                                                     plot.title = paste(data.set,"_IC#_",i,sep =""))    
             } else {
                 # If no peak labeling is available color them in black
@@ -334,13 +330,19 @@ if(method == "ica"){
           # Need to figure out which plot might be most effective
           
               if(class(info.df[,color.by]) == "factor"){
-                    mclust.plots[[3]] <- ggplot(coeff.plot.df, 
-                                                aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                                geom_boxplot() + 
-                                                xlab(paste("Covariate = ",color.by,sep="")) + 
-                                                ylab("") +  
-                                                theme(axis.ticks = element_blank(), 
-                                                      axis.text.x = element_blank()) 
+                number.of.levels <- length(levels(pca.result$info.df[,color.by]))
+                  
+                mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                            aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                            geom_boxplot() + 
+                                            xlab(paste("Covariate = ",color.by,sep="")) + 
+                                            ylab("") +  
+                                            theme(axis.ticks = element_blank(), 
+                                                  axis.text.x = element_blank())
+
+                if(number.of.levels > 10){
+                  mclust.plots[[3]] <- mclust.plots[[3]] + theme(legend.position = "none")
+                }
               
               } else{
                     mclust.plots[[3]] <- ggplot(coeff.plot.df, 
@@ -448,29 +450,12 @@ if (method == "pca"){
                               "data" = mclust.obj$data )
   
   
-  if(!is.null(pca.result$ordered.geneinfo)){
-    
-    # create axis tick positions for chromosomes if gene info is supplied
-    chromosomes <- unique(pca.result$ordered.geneinfo$pheno_chr)
-    x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
-    
-    for(k in 1:length(chromosomes)){
-      j <- chromosomes[k]
-      x.axis[1,k] <- min(subset(pca.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
-      x.axis[2,k] <- max(subset(pca.result$ordered.geneinfo, pheno_chr == j)[,"idx"])
-    }
-    
-    x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
-
-  }
-  
-  
   if(is.null(pca.result$ordered.geneinfo)){           
       mclust.plots[[1]] <- plot_component(pca.result$rotation[,i],
                                       paste(data.set,"_PC#_",i,sep =""))
     } else { # if gene position information is available
       
-      mclust.plots[[1]] <- plot_component_chr(pca.result$rotation[,i], 
+      mclust.plots[[1]] <- plot_component_chr(pca.result$rotation[,i, drop = FALSE], 
                                       geneinfo.df = pca.result$ordered.geneinfo,
                                       x.axis = x.axis,
                                       plot.title = paste(data.set,"_PC#_",i,sep =""), 
@@ -514,11 +499,17 @@ if (method == "pca"){
      
    
           if(class(pca.result$info.df[,color.by]) == "factor"){
-                mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
-                                            geom_boxplot() + xlab(paste("Covariate = ",color.by,sep="")) + 
-                                            ylab("") +  
-                                            theme(axis.ticks = element_blank(), axis.text.x = element_blank()) 
-          
+            number.of.levels <- length(levels(pca.result$info.df[,color.by]))
+            mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                          geom_boxplot() + xlab(paste("Covariate = ",color.by,sep="")) + 
+                                          ylab("") +  
+                                          theme(axis.ticks = element_blank(), 
+                                                axis.text.x = element_blank()) 
+            if(number.of.levels > 10){
+              mclust.plots[[3]] <- mclust.plots[[3]] + theme(legend.position = "none")
+
+              } 
+            
           } else{
                 mclust.plots[[3]] <- ggplot(coeff.plot.df, aes_string(x = color.by, y = "IC", color = color.by)) + 
                                         geom_point() + xlab(paste("Covariate = ",color.by,sep=""))  + 

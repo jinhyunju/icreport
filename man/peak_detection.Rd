@@ -6,7 +6,7 @@
 peak_detection(ica.input.s)
 }
 \arguments{
-\item{s}{A single column of the S matrix with dimensions 1 x g  \code{s}}
+\item{ica.input.s}{A single column of the S matrix with dimensions 1 x g  \code{s}}
 }
 \value{
 A vector that contains the gene weights of the signficant peaks for a single independent component sorted
@@ -16,9 +16,6 @@ in the decreasing order of absolute magnitude.
 The function takes in the A matrix from the ica.result object
 with a dataframe of measured covariates to test the association
 between them.
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

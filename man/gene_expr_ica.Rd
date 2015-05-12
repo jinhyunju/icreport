@@ -6,7 +6,7 @@
 gene_expr_ica(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
   k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3, n.runs = 5,
   max.iter = 10, n.cores = NULL, cor.threshold = 0.05,
-  similarity.measure = "peaks", ...)
+  similarity.measure = "peaks")
 }
 \arguments{
 \item{phenotype.mx}{Phenotype matrix with diemnsions g x N}
@@ -38,9 +38,6 @@ List with the following entries.
 }
 \description{
 Performing ICA on a dataset and create a list object with results.
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

@@ -4,7 +4,7 @@
 \title{Custom PCA function for analyzing gene expression data.}
 \usage{
 gene_expr_pca(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
-  scale.pheno = FALSE, cor.threshold = 0.05, ...)
+  scale.pheno = FALSE, cor.threshold = 0.05)
 }
 \arguments{
 \item{phenotype.mx}{Phenotype matrix with diemnsions g x N}
@@ -23,9 +23,6 @@ List with the following entries.
 }
 \description{
 Performing PCA on a dataset and create a list object with results.
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 

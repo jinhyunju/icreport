@@ -1,14 +1,19 @@
 Package: icreport
 Title: Tools for creating a visual summary of matrix decomposition results.
 Version: 0.1
-Authors@R: "Jinhyun Ju <jinhyun.ju@gmail.com> [aut, cre]"
-Description: What the package does (one paragraph)
+Authors@R: person("Jinhyun", "Ju", email = "jinhyun.ju@gmail.com",
+    role = c("aut", "cre"))
+Description: icreport is a package for exploratory data analysis for gene
+    expression data. ICA and PCA can be performed on expression data
+    with simple code and comprehensive summary reports can be generated.
 Depends:
     R (>= 3.0.0)
-License: What license is it under?
+License: GPL-3
 LazyData: true
 Imports:
-    fastICA,
+    MASS,
+    grid,
+    gtools,
     ggplot2,
     mclust,
     parallel,

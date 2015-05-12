@@ -9,15 +9,19 @@ report2me(input = NULL, n.comps = NULL, prefix = NULL,
 \arguments{
 \item{input}{ICA or PCA result list created by either \code{gene_expr_ica()} or \code{gene_expr_pca()}.}
 
-\item{n.comps}{Number of principal components to plot. Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.}
+\item{n.comps}{Number of principal components to plot.
+Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.}
 
 \item{prefix}{Output filename prefix. The output file will be named
 "prefix_ICA_summary.html".}
 
+\item{geneinfo.df}{Dataframe that contains positions of the genes.}
+
 \item{output.path}{Directory path for generating the output HTML file.
 default is set to current working directory.}
 
-\item{file.ext}{File extension to be used for saved plots. Default is set to png for html reports.
+\item{file.ext}{File extension to be used for saved plots.
+Default is set to png for html reports.
 Note that if you use pdf plots for html files they will not show up in your report.}
 }
 \value{
@@ -25,9 +29,6 @@ output HTML report.
 }
 \description{
 Generating a HTML report from a ICA or PCA list object.
-}
-\examples{
-R code here showing how your function works
 }
 \keyword{keywords}
 
