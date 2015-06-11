@@ -330,7 +330,7 @@ if(method == "ica"){
           # Need to figure out which plot might be most effective
           
               if(class(info.df[,color.by]) == "factor"){
-                number.of.levels <- length(levels(pca.result$info.df[,color.by]))
+                number.of.levels <- length(levels(ica.result$info.df[,color.by]))
                   
                 mclust.plots[[3]] <- ggplot(coeff.plot.df, 
                                             aes_string(x = color.by, y = "IC", color = color.by)) + 

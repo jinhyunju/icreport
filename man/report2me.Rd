@@ -15,7 +15,9 @@ Default is set to plot every PC. Only used for PCA plotting not for ICA plotting
 \item{prefix}{Output filename prefix. The output file will be named
 "prefix_ICA_summary.html".}
 
-\item{geneinfo.df}{Dataframe that contains positions of the genes.}
+\item{geneinfo.df}{Dataframe that contains positions of the genes. Column names should be
+"pheno_chr" for chromosomes, "pheno_start" for starting position and "pheno_end" for
+ending positions.}
 
 \item{output.path}{Directory path for generating the output HTML file.
 default is set to current working directory.}

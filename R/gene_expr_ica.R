@@ -49,8 +49,8 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
     if(is.null(k.est)){
-      svd.pheno <- svd(phenotype.mx)
-      percent <- (cumsum(svd.pheno$d) /sum(svd.pheno$d)) * 100
+      pca.pheno <- prcomp(t(phenotype.mx))
+      percent <- (cumsum(pca.pheno$sdev^2) /sum(pca.pheno$sdev^2)) * 100
       k.est <- which(percent > 90)[1]
     }
 
@@ -136,7 +136,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
                                       fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                       alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
-                                      maxit=500, tol = 0.0001, verbose = TRUE)
+                                      maxit=500, tol = 0.0001, verbose = FALSE)
       k.update <- k.est
     }
 
@@ -257,7 +257,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     ica.result$ica.confeti.mx <- matrix(0,nrow = nrow(ica.result$S), ncol = ncol(ica.result$S))
     # rownames = gene names
     rownames(ica.result$ica.confeti.mx) <- rownames(ica.result$S)
-    # column names = correlated ICs + multi cluster ICs
+    # column names = ICs
     colnames(ica.result$ica.confeti.mx) <- colnames(ica.result$S)
 
     #message("Creating CONFETI matrix for regression \n")

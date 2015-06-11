@@ -20,56 +20,55 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 
 ```
 
-2) Installing and loading an example dataset using the package GEOquery.
+2) Loading an example dataset
 
-- Here we are going to use a public dataset that is available on the Gene Expression Omnibus (GEO), using the package GEOquery.
-
+- Here we are going to use a public dataset that is available on the Gene Expression Omnibus (GEO).
 
 - You can use your own dataset, it just needs to be a matrix which has the dimension of (gene x samples). A dataframe with covariate information is optional with dimensions (samples x covariates). 
 
-```{r Install datasets, eval = FALSE}
-source("http://bioconductor.org/biocLite.R")    # install the GEOquery package
-biocLite("GEOquery")        
-library("GEOquery") # load package into workspace
+- To generate the example dataset, all you have to do is source the script included in the package. 
 
-gse60028 <- GEOquery::getGEO(GEO = "GSE60028")  # get the GEO data 
-                                                # (this may take a few minutes depending on your network connection)
-geo.eset <- gse60028$GSE60028_series_matrix.txt.gz # extract the expression set
+- If you are interested in the details of the script you can check the path to the script by printing out the value that is saved in the ```example.data.script``` object and open it up in any text editor. 
 
-expr <- exprs(geo.eset)       # extract the expression matrix
-pdata <- pData(geo.eset)      # extract sample information
-pdata <- pdata[,c("characteristics_ch1", "characteristics_ch1.1",
-                               "characteristics_ch1.2","characteristics_ch1.3",
-                               "characteristics_ch1.4")]
+- Please be aware that the script will install two packages ```Geoquery``` and ```biomaRt``` if you don't already have it on your machine. 
 
-# parsing the original pdata dataframe into a more natural form
-sample.info <- data.frame(apply(pdata, 2, 
-                     function(x) sapply(strsplit(x, ": "), 
-                                        function(a) a[2]))) #extract the data
-colnames(sample.info) <- apply(pdata, 2, function(x) strsplit(x, ":")[[1]][1])
-sample.info$level_of_reaction[which(is.na(sample.info$level_of_reaction))] <- "3"  # correct a column which had missing data
+```{r Install datasets, message = FALSE, warning=FALSE}
+example.data.script <- system.file("templates/create_example_data.R", package="icreport")
+
+source(example.data.script)
 ```
 
-- Onething that you have to watch out for is that the rownames of ```info.df``` have to match the column names of the ```phenotype.mx```. They don't necessarily have to be in the same order but they should have names that overlap. 
+- This will take a few minutes depending on your internet connection, since it is downloading data from GEO and biomaRt. 
+
+- If everything ran correctly, it will generate 3 objects, ```expr.data```, ```sample.info```, and ```probe.info```.
+
+- ```expr.data``` = gene expression measurements for 26383 probes and 47 samples. 
+
+- ```sample.info``` = 5 covariates for each sample 
+
+- ```probe.info``` = positional information for 26828 probes
+  
+  
+- Onething that you have to watch out for is that the rownames of ```sample.info``` have to match the column names of the ```expr.data```. They don't necessarily have to be in the same order but they should have names that overlap. 
 
 
 ### 2.Running ICA on the expression dataset. 
 
 2-1) Things that you need:
 
-- phenotype.mx is the expression matrix with genes in rows and samples in columns (dimension = genes x samples)
+- phenotype.mx should be the expression matrix with genes in rows and samples in columns (dimension = genes x samples)
 
-- info.df is the sample information table with the covariates in columns (dimension = samples x covariates)
+- info.df should be the sample information data frame with the covariates in columns (dimension = samples x covariates)
 
-- check.covars is a vector that contains the names of the covariates (column names of info.df) that should be tested for correlation. 
+- check.covars should be a vector that contains the names of the covariates (column names of sample.info) that should be tested for associations with independent components. In this case we are testing all 5 covariates for associations.
 
 - For information regarding other advanced options please use ```?gene_expr_ica```.
 
 2-2) In case you have covariates:
 
-```{r ICA w covars, eval = FALSE}
+```{r ICA w covars, message = FALSE, warning=FALSE}
 library(icreport)
-ica_result <- gene_expr_ica(phenotype.mx = expr, 
+ica_result <- gene_expr_ica(phenotype.mx = expr.data, 
                             info.df = sample.info,
                             check.covars = colnames(sample.info))
 
@@ -86,22 +85,34 @@ ica_result <- gene_expr_ica(phenotype.mx = expr)
 
 2-4) Creating a report file in the current working directory
 
-- ica.result is the result generated by the ```gene_expr_ica()``` function.
+- input should be the result generated by the ```gene_expr_ica()``` function.
 
 - prefix specifies the name of the html report file. 
 
-- You can specify the output directory by including the option output.path = "/path/to/directory". Please note that sometimes directories starting with the ~ are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
+- geneinfo.df should be a dataframe that contains information about gene (or probe) positions. The column names should be "phenotype" for the genes or probes (rownames of expr.data), "pheno_chr" for chromosomes, "pheno_start" for starting coordinates and "pheno_end" for end coordinates. See example below for more details. 
 
-```{r ICA report, eval = FALSE}
-report2me(input = ica_result, prefix = "Test_ICA_Report")
+```{r geneinfo example, comment = NA}
+head(probe.info)
+
 ```
+
+- You can specify the output directory by including the option output.path = "/path/to/directory". Please note that sometimes directories starting with the short cut for home "~" are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
+
+```{r ICA report, message = FALSE, warning=FALSE}
+report2me(input = ica_result, 
+          prefix = "Test_ICA_Report",
+          geneinfo.df = probe.info)
+```
+
 ### 3.Running PCA on the expression dataset. 
+
+The PCA functionality of the package runs ```prcomp()``` on the dataset, and also tests given covariates against the principal components.
 
 3-1) In case you have covariates:
 
-```{r PCA w covars, eval = FALSE}
+```{r PCA w covars, message = FALSE, warning=FALSE}
 
-pca_result <- gene_expr_pca(phenotype.mx = expr, 
+pca_result <- gene_expr_pca(phenotype.mx = expr.data, 
                             info.df = sample.info,
                             check.covars = colnames(sample.info))
 
@@ -111,7 +122,7 @@ pca_result <- gene_expr_pca(phenotype.mx = expr,
 
 ```{r PCA wo covars, eval = FALSE}
 
-pca_result <- gene_expr_pca(phenotype.mx = expr)
+pca_result <- gene_expr_pca(phenotype.mx = expr.data)
 
 ```
 
@@ -123,9 +134,17 @@ pca_result <- gene_expr_pca(phenotype.mx = expr)
 
 - prefix specifies the name of the html report file. 
 
-```{r PCA report, eval = FALSE}
-report2me(input = pca_result, prefix = "Test_PCA_Report")
+```{r PCA report, message = FALSE, warning=FALSE}
+report2me(input = pca_result, 
+          prefix = "Test_PCA_Report",
+          geneinfo.df = probe.info)
 ```
+
+
+### Explaining Results
+
+- What each figure in the output means. 
+
 
 
 Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian, and Jason B. for testing and feedback. 

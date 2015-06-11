@@ -7,7 +7,9 @@
 #'        Default is set to plot every PC. Only used for PCA plotting not for ICA plotting.
 #' @param prefix Output filename prefix. The output file will be named
 #'        "prefix_ICA_summary.html".
-#' @param geneinfo.df Dataframe that contains positions of the genes.
+#' @param geneinfo.df Dataframe that contains positions of the genes. Column names should be
+#'        "pheno_chr" for chromosomes, "pheno_start" for starting position and "pheno_end" for
+#'        ending positions.
 #' @param output.path Directory path for generating the output HTML file.
 #'        default is set to current working directory.
 #' @param file.ext File extension to be used for saved plots.
