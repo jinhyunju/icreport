@@ -60,6 +60,7 @@ sample.info <- data.frame(apply(covariate.data, 2,
 colnames(sample.info) <- apply(covariate.data, 2, function(x) strsplit(x, ":")[[1]][1])
 sample.info$level_of_reaction <- as.character(sample.info$level_of_reaction)
 sample.info$level_of_reaction[which(is.na(sample.info$level_of_reaction))] <- "0"  # correct a column which had missing data
+sample.info$level_of_reaction <- factor(sample.info$level_of_reaction)  # correct a column which had missing data
 
 # remove redundant and temporary objects
 rm(gse60028, biomart.output, covariate.data, mart.ensembl, geo.eset, feature.df)
