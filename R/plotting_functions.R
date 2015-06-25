@@ -56,17 +56,21 @@ plot_component <- function(s,
 
     significant.peaks <- names(peakresult)
 
-    n.peaks <- length(peakresult)
-
     peak.idx <- 1 * (rownames(s) %in% significant.peaks)
 
-    plot.sig <- data.frame(idx = rank(-s, ties.method = "first"), sig = s, peaks = peak.idx)
-    plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
+    plot.sig <- data.frame(idx = rank(-s, ties.method = "first"),
+                           sig = s,
+                           peaks = peak.idx)
+
+    plot.title <- paste(plot.title,"_",length(peakresult),"peaks", sep = " ")
+
     p <- ggplot(plot.sig, aes(x=idx, y= sig)) +
       geom_linerange(aes(ymin=0, ymax=sig, colour = factor(peaks))) +
-      scale_y_continuous(expand=c(0,0))+scale_color_manual(values=c("black", "red")) +
+      scale_y_continuous(expand=c(0,0)) +
+      scale_color_manual(values=c("black", "red")) +
       xlab("Genes sorted by weights") + ylab("Gene Weights")+
       labs(title = plot.title) +theme(legend.position="none")
+
     return(p)
   }
 
@@ -209,9 +213,7 @@ plot_component_chr <- function(s,
       geneinfo.df$peaks <- rep(0, nrow(geneinfo.df))
   }
 
-
-  n.peaks <- sum(geneinfo.df$peaks)
-  plot.title <- paste(plot.title,"_",n.peaks,"peaks", sep = " ")
+  plot.title <- paste(plot.title,"_",length(peakresult),"peaks", sep = " ")
 
   rect_left <- x.axis[1,]
   rect_right <- x.axis[2,]

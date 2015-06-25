@@ -30,7 +30,7 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 
 - If you are interested in the details of the script you can check the path to the script by printing out the value that is saved in the ```example.data.script``` object and open it up in any text editor. 
 
-- Please be aware that the script will install two packages ```Geoquery``` and ```biomaRt``` if you don't already have it on your machine. 
+- Please be aware that the script will install two packages ```GEOquery``` and ```biomaRt``` if you don't already have it on your machine. 
 
 ```{r Install datasets, message = FALSE, warning=FALSE, cache = TRUE}
 example.data.script <- system.file("templates/create_example_data.R", package="icreport")
