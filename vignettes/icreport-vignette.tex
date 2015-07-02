@@ -1,0 +1,318 @@
+\documentclass[11pt, oneside]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ...
+\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps? with pdflatex; use eps in DVI mode
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{soul}           % enables highlighting
+\usepackage{hyperref}       % include url
+
+\pagestyle{fancy}
+%\fancyhf{}
+%\fancyhead[C]{\textit{icreport vignette}}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[R]{page \thepage}
+
+
+\title{R package icreport Vignette }
+\author{Jinhyun Ju}
+\date{}							% Activate to display a given date or no date
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+\maketitle
+
+
+
+\section{Introduction}
+
+The \verb|icreport| package's main functionality inlcudes running independent component analysis (ICA) or principal component analysis (PCA) on a given data set and subsequently generating a comprehensive and compact report of the results.
+
+\section{Important Note}
+
+The report generating feature of this package requires a program called \verb|pandoc| version 1.12.3 or higher to be installed. This is not a problem when you are using the most recent version of Rstudio (0.98.1102 at the moment - 2 March 2015), since it comes with the required \verb|pandoc| functionality. However, if you are running \verb|icreport| from good-old-fashioned-R you might run into an error message that pandoc is not installed. In such a case, please review the following link to install the correct version of pandoc on your machine. \url{https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md}
+
+\section{Quickstart}
+
+If you already know what you want to use the package for, follow this simple example to get started!
+
+\subsection{Installation}
+
+The package is not yet published on bioconductor or CRAN, so the best way to install the package is directly from github. Installing the package through the function \verb|install_github| from the package \verb|devtools|.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"devtools"}\hlstd{)} \hlcom{# in case you don't have devtools already}
+
+\hlstd{devtools}\hlopt{::}\hlkwd{install_github}\hlstd{(}\hlstr{"jinhyunju/icreport"}\hlstd{)} \hlcom{#installing icreport}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Loading an example dataset}
+
+Here we are going to use a public dataset that is available on the Gene Expression Omnibus (GEO). You can use your own dataset, it just needs to be a matrix which has the dimension of (gene x samples). A dataframe with covariate information is optional with dimensions (samples x covariates).
+
+To generate the example dataset, all you have to do is source the script included in the package. If you are interested in the details of the script you can check the path to the script by printing out the value that is saved in the \verb|example.data.script| object and open it up in any text editor.
+
+Please be aware that the script will install two packages \verb|GEOquery| and \verb|biomaRt| if you don't already have it on your machine.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{example.data.script} \hlkwb{<-} \hlkwd{system.file}\hlstd{(}\hlstr{"templates/create_example_data.R"}\hlstd{,}
+                                   \hlkwc{package}\hlstd{=}\hlstr{"icreport"}\hlstd{)}
+
+\hlkwd{source}\hlstd{(example.data.script)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+This will take a few minutes depending on your internet connection, since it is downloading data from GEO and biomaRt. In case everything ran correctly, it will generate 3 objects, \verb|expr.data|, \verb|sample.info|, and \verb|probe.info|.
+
+\begin{itemize}
+  \item \verb|expr.data| gene expression measurements for 26383 probes and 47 samples.
+
+  \item \verb|sample.info| 5 covariates for each sample
+
+  \item \verb|probe.info| positional information for 26828 probes
+\end{itemize}
+
+Onething that you have to watch out for is that the rownames of \verb|sample.info| have to match the column names of the \verb|expr.data|. They don't necessarily have to be in the same order but they should have names that overlap.
+
+
+\subsection{Running ICA on the expression dataset.}
+
+Now let's get down to business. The basic inputs for the function \verb|gene_expr_ica| are as follows:
+
+\begin{itemize}
+
+  \item \verb|phenotype.mx| should be the expression matrix with genes in rows and samples in columns (dimension = genes x samples)
+
+  \item \verb|info.df| should be the sample information data frame with the covariates in columns (dimension = samples x covariates)
+
+  \item \verb|check.covars| should be a vector that contains the names of the covariates (column names of \verb|sample.info|) that should be tested for associations with independent components. In this case we are testing all 5 covariates for associations.
+\end{itemize}
+
+For information regarding other advanced options please use \verb|?gene_expr_ica|. The functioncal for a case when you have covariates that you want to check would look like this:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(icreport)}
+\hlstd{ica.result} \hlkwb{<-} \hlkwd{gene_expr_ica}\hlstd{(}\hlkwc{phenotype.mx} \hlstd{= expr.data,}
+                            \hlkwc{info.df} \hlstd{= sample.info,}
+                            \hlkwc{check.covars} \hlstd{=} \hlkwd{colnames}\hlstd{(sample.info))}
+
+\hlcom{# This may also take a few minutes depending on the size of your dataset.}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+In case you don't have any covariates the only input you need is the expression data matrix:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{ica.result} \hlkwb{<-} \hlkwd{gene_expr_ica}\hlstd{(}\hlkwc{phenotype.mx} \hlstd{= expr.data)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Generating ICA output reports}
+
+After running ICA on a given dataset you can easily generate an HTML report to review the results using the function \verb|report2me()|. The essential inputs for \verb|report2me| are:
+
+
+\begin{itemize}
+
+  \item \verb|prefix| specifies the name of the html report file.
+
+  \item \verb|geneinfo.df| should be a dataframe that contains information about gene (or probe) positions. The column names should be "phenotype" for the genes or probes (rownames of \verb|expr.data|), "pheno\_chr" for chromosomes, "pheno\_start" for starting coordinates and "pheno\_end" for end coordinates as shown in the example below.
+
+\end{itemize}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{head}\hlstd{(probe.info)}
+\end{alltt}
+\begin{verbatim}
+    phenotype pheno_chr pheno_start pheno_end
+1 216705_s_at        20    44619522  44652233
+2   204639_at        20    44619522  44652233
+3   203440_at        18    27950966  28177446
+4   242876_at         1   243488233 243851079
+5   222880_at         1   243488233 243851079
+6   212607_at         1   243488233 243851079
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+You can specify the output path using the option \verb|output.path = "/path/to/directory"|. Please note that sometimes directories starting with the short cut for home \verb|"~" |are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{report2me}\hlstd{(}\hlkwc{input} \hlstd{= ica.result,}
+          \hlkwc{prefix} \hlstd{=} \hlstr{"Test_ICA_Report"}\hlstd{,}
+          \hlkwc{geneinfo.df} \hlstd{= probe.info)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Running PCA on the expression dataset.}
+
+You can use the function \verb|gene_expr_pca()| to run PCA on your dataset. Running PCA on a dataset is almost identical to the process of running ICA, and the essential inputs for the function are the same. In case you have covariates:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{pca.result} \hlkwb{<-} \hlkwd{gene_expr_pca}\hlstd{(}\hlkwc{phenotype.mx} \hlstd{= expr.data,}
+                            \hlkwc{info.df} \hlstd{= sample.info,}
+                            \hlkwc{check.covars} \hlstd{=} \hlkwd{colnames}\hlstd{(sample.info))}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in eval(expr, envir, enclos): could not find function "{}gene\_expr\_pca"{}}}\end{kframe}
+\end{knitrout}
+
+In case you don't have any covariates:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{pca.result} \hlkwb{<-} \hlkwd{gene_expr_pca}\hlstd{(}\hlkwc{phenotype.mx} \hlstd{= expr.data)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Generating PCA output reports}
+
+The process of generating a PCA report is identical to the process of generating an ICA report. \verb|report2me()| automatically detects whether the inputs are ICA or PCA results through the \verb|method| attribute and generates a report with the corresponding format.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{report2me}\hlstd{(}\hlkwc{input} \hlstd{= pca.result,}
+          \hlkwc{prefix} \hlstd{=} \hlstr{"Test_PCA_Report"}\hlstd{,}
+          \hlkwc{geneinfo.df} \hlstd{= probe.info)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\section{Interpreting Outputs}
+
+Before we describe what each plot in the output report means, let us briefly review the model of ICA. The key assumption of ICA is that each observed sample $\mathbf{y}_i$ for $i = 1,\ ...,\ n$, is a linear combination of $k$ independent components $\mathbf{s}_1,...,\mathbf{s}_k$ such that:
+
+\begin{equation}
+  \mathbf{y}_i = a_{i1}\mathbf{s}_1 + a_{i2}\mathbf{s}_2 + ... + a_{ik}\mathbf{s}_k
+\end{equation}
+
+where each $\mathbf{s}_j$ for $j = 1,\ ...,\ k $ are the independent components and the corresponding $a_{ij}$s are scalar coefficients that represent the relative weights of each component in sample $\mathbf{y}_i$. 
+
+\subsection{Individual IC plots}
+
+Let us begin with the individual IC plots that constitute most of the report. Each individual plot will first have some printed information about the component. 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+    Variance_Percent Correlated_Covariate     p.value Number_of_Peaks
+IC7         4.094776               gender 5.51875e-41             433
+---- Top 10 Gene Weights ---- 
+    201909_at 221728_x_at 214218_s_at 224588_at 224590_at 227671_at
+IC7    -35.75       33.72       32.69     31.71     31.65     31.54
+    231592_at 205000_at 204409_s_at 206700_s_at
+IC7     30.28    -27.75       -27.7      -27.46
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The first two lines summarize the given component by the percent variance, associated covariate, the corresponding p-value for the association, and the number of "peaks". The percent variance is an equivalent to the concept in PCA. Associated covariates are found using ANOVA and called significant if they pass the bonferroni corrected threshold. Peaks are showing the number of genes that have gene weights greater than 2 standard deviations of the given component (more on this to follow). The following lines show the top 10 genes (or probes) contributing the most to the given component and their corresponding gene weight. 
+
+The summarized information is followed by 3 plots that describe a given component. The first plot shows the gene weights for the component sorted by chromosome position.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{figure/r_IC_plot1-1} 
+
+\end{knitrout}
+
+Explain peaks, gene weights. 
+
+Each component $\mathbf{s}_j$ can be thought of as a vector with length $g$, where $g$ is equal to the number of measured genes. You can think of each component as a direction in the $g$ dimensional gene space, thus we can assess the importance of a specific gene in each direction by looking at their gene weights (or loadings). For example, if the 3rd entry $g_3$ is the largest for component $\mathbf{s_1}$, we can assume that $g_3$ is the most important gene for component $\mathbf{s_1}$.
+
+
+The next plots are showing the IC coefficients for the given component in a scatter and boxplot. 
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{figure/r_IC_plot2-1} 
+
+\end{knitrout}
+
+Explain IC coefficients, scenarios where associated covariate exists and doesn't.
+
+
+Explain PC plots as well. 
+
+
+
+
+\end{document}

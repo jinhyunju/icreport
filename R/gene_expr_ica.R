@@ -49,9 +49,12 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
     if(is.null(k.est)){
+      message("Missing input for k, using the number of principal components explaining 90% of total variance")
       pca.pheno <- prcomp(t(phenotype.mx))
       percent <- (cumsum(pca.pheno$sdev^2) /sum(pca.pheno$sdev^2)) * 100
       k.est <- which(percent > 90)[1]
+      message(k.est,"components explain more than 90% of the variance")
+
     }
 
     ica.list <- list()
@@ -133,6 +136,8 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       rm(Avg.S)
 
     } else if (n.runs ==1){
+      message("Running ICA once with", k.est," components to be estimated")
+
       ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
                                       fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
                                       alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
