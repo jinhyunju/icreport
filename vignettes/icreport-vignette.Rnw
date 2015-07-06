@@ -1,0 +1,302 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ...
+\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps? with pdflatex; use eps in DVI mode
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{soul}           % enables highlighting
+\usepackage{hyperref}       % include url
+
+\pagestyle{fancy}
+%\fancyhf{}
+%\fancyhead[C]{\textit{icreport vignette}}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[R]{page \thepage}
+
+
+\title{R package icreport Vignette }
+\author{Jinhyun Ju}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+
+
+\maketitle
+
+<< echo = FALSE>>=
+seed_value <- 19710822
+set.seed(seed_value)
+options(width = 72)
+#opts_chunk$set(fig.width=4, fig.height=4, fig.align='center', fig.show='hold', out.width='0.3\\linewidth')
+
+# http://stackoverflow.com/questions/23114654/knitr-output-hook-with-an-output-lines-option-that-works-like-echo-26
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+   lines <- options$output.lines
+   if (is.null(lines)) {
+     return(hook_output(x, options))  # pass to default hook
+   }
+   x <- unlist(strsplit(x, "\n"))
+   more <- "..."
+   if (length(lines)==1) {        # first n lines
+     if (length(x) > lines) {
+       # truncate the output, but add ....
+       x <- c(head(x, lines), more)
+     }
+   } else {
+     x <- c(if (abs(lines[1])>1) more else NULL,
+            x[lines],
+            if (length(x)>lines[abs(length(lines))]) more else NULL
+           )
+   }
+   # paste these lines together
+   x <- paste(c(x, ""), collapse = "\n")
+   hook_output(x, options)
+ })
+@
+
+\section{Introduction}
+
+The \verb|icreport| package's main functionality inlcudes running independent component analysis (ICA) or principal component analysis (PCA) on a given data set and subsequently generating a comprehensive and compact report of the results.
+
+\section{Important Note}
+
+The report generating feature of this package requires a program called \verb|pandoc| version 1.12.3 or higher to be installed. This is not a problem when you are using the most recent version of Rstudio (0.98.1102 at the moment - 2 March 2015), since it comes with the required \verb|pandoc| functionality. However, if you are running \verb|icreport| from good-old-fashioned-R you might run into an error message that pandoc is not installed. In such a case, please review the following link to install the correct version of pandoc on your machine. \url{https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md}
+
+\section{Quickstart}
+
+If you already know what you want to use the package for, follow this simple example to get started!
+
+\subsection{Installation}
+
+The package is not yet published on bioconductor or CRAN, so the best way to install the package is directly from github. Installing the package through the function \verb|install_github| from the package \verb|devtools|.
+
+<<r Install icreport, eval = FALSE>>==
+install.packages("devtools") # in case you don't have devtools already
+
+devtools::install_github("jinhyunju/icreport") #installing icreport
+@
+
+\subsection{Loading an example dataset}
+
+Here we are going to use a public dataset that is available on the Gene Expression Omnibus (GEO). You can use your own dataset, it just needs to be a matrix which has the dimension of (gene x samples). A dataframe with covariate information is optional with dimensions (samples x covariates).
+
+To generate the example dataset, all you have to do is source the script included in the package. If you are interested in the details of the script you can check the path to the script by printing out the value that is saved in the \verb|example.data.script| object and open it up in any text editor.
+
+Please be aware that the script will install two packages \verb|GEOquery| and \verb|biomaRt| if you don't already have it on your machine.
+
+<< r Install datasets, message = FALSE, warning=FALSE, cache = TRUE>>==
+example.data.script <- system.file("templates/create_example_data.R",
+                                   package="icreport")
+
+source(example.data.script)
+@
+
+<< r setseed, echo = FALSE>>==
+set.seed(7777777)
+setwd("~/Dropbox/ICA_organized_workspace/")
+@
+
+This will take a few minutes depending on your internet connection, since it is downloading data from GEO and biomaRt. In case everything ran correctly, it will generate 3 objects, \verb|expr.data|, \verb|sample.info|, and \verb|probe.info|.
+
+\begin{itemize}
+  \item \verb|expr.data| gene expression measurements for 26383 probes and 47 samples.
+
+  \item \verb|sample.info| 5 covariates for each sample
+
+  \item \verb|probe.info| positional information for 26828 probes
+\end{itemize}
+
+Onething that you have to watch out for is that the rownames of \verb|sample.info| have to match the column names of the \verb|expr.data|. They don't necessarily have to be in the same order but they should have names that overlap.
+
+
+\subsection{Running ICA on the expression dataset.}
+
+Now let's get down to business. The basic inputs for the function \verb|gene_expr_ica| are as follows:
+
+\begin{itemize}
+
+  \item \verb|phenotype.mx| should be the expression matrix with genes in rows and samples in columns (dimension = genes x samples)
+
+  \item \verb|info.df| should be the sample information data frame with the covariates in columns (dimension = samples x covariates)
+
+  \item \verb|check.covars| should be a vector that contains the names of the covariates (column names of \verb|sample.info|) that should be tested for associations with independent components. In this case we are testing all 5 covariates for associations.
+\end{itemize}
+
+For information regarding other advanced options please use \verb|?gene_expr_ica|. The functioncal for a case when you have covariates that you want to check would look like this:
+
+<< r ICA w covars, eval = TRUE, message = FALSE, warning=FALSE, cache = TRUE>>==
+library(icreport)
+ica.result <- gene_expr_ica(phenotype.mx = expr.data,
+                            info.df = sample.info,
+                            check.covars = colnames(sample.info))
+
+# This may also take a few minutes depending on the size of your dataset.
+@
+
+In case you don't have any covariates the only input you need is the expression data matrix:
+
+<< r ICA wo covars, eval = FALSE  >>==
+ica.result <- gene_expr_ica(phenotype.mx = expr.data)
+@
+
+\subsection{Generating ICA output reports}
+
+After running ICA on a given dataset you can easily generate an HTML report to review the results using the function \verb|report2me()|. The essential inputs for \verb|report2me| are:
+
+
+\begin{itemize}
+
+  \item \verb|prefix| specifies the name of the html report file.
+
+  \item \verb|geneinfo.df| should be a dataframe that contains information about gene (or probe) positions. The column names should be "phenotype" for the genes or probes (rownames of \verb|expr.data|), "pheno\_chr" for chromosomes, "pheno\_start" for starting coordinates and "pheno\_end" for end coordinates as shown in the example below.
+
+\end{itemize}
+
+<< r geneinfo example, comment = NA>>==
+
+head(probe.info)
+
+@
+
+You can specify the output path using the option \verb|output.path = "/path/to/directory"|. Please note that sometimes directories starting with the short cut for home \verb|"~" |are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
+
+<< r ICA report, eval = FALSE, message = FALSE, warning=FALSE, results='hide' >>==
+report2me(input = ica.result, 
+          prefix = "Test_ICA_Report",
+          geneinfo.df = probe.info)
+@
+
+\subsection{Running PCA on the expression dataset.}
+
+You can use the function \verb|gene_expr_pca()| to run PCA on your dataset. Running PCA on a dataset is almost identical to the process of running ICA, and the essential inputs for the function are the same. In case you have covariates:
+
+<< r PCA w covars, eval = TRUE, message = FALSE, warning=FALSE>>==
+
+pca.result <- gene_expr_pca(phenotype.mx = expr.data, 
+                            info.df = sample.info,
+                            check.covars = colnames(sample.info))
+
+@
+
+In case you don't have any covariates:
+
+<< r PCA wo covars, eval = FALSE >>==
+
+pca.result <- gene_expr_pca(phenotype.mx = expr.data)
+
+@
+
+\subsection{Generating PCA output reports}
+
+The process of generating a PCA report is identical to the process of generating an ICA report. \verb|report2me()| automatically detects whether the inputs are ICA or PCA results through the \verb|method| attribute and generates a report with the corresponding format.
+
+<< r PCA report, eval = FALSE, message = FALSE, warning=FALSE>>==
+report2me(input = pca.result, 
+          prefix = "Test_PCA_Report",
+          geneinfo.df = probe.info)
+@
+
+\section{Interpreting Outputs}
+
+Before we describe what each plot in the output report means, let us briefly review the model of ICA. The key assumption of ICA is that each observed sample $\mathbf{y}_i$ for $i = 1,\ ...,\ n$, is a linear combination of $k$ independent components $\mathbf{s}_1,...,\mathbf{s}_k$ such that:
+
+\begin{equation}
+  \mathbf{y}_i = a_{i1}\mathbf{s}_1 + a_{i2}\mathbf{s}_2 + ... + a_{ik}\mathbf{s}_k
+\end{equation}
+
+where each $\mathbf{s}_j$ for $j = 1,\ ...,\ k $ are the independent components and the corresponding $a_{ij}$s are scalar coefficients that represent the relative weights of each component in sample $\mathbf{y}_i$. 
+
+\subsection{Individual IC plots}
+
+Let us begin with the individual IC plots that constitute most of the report. Each individual plot will first have some printed information about the component. 
+
+<< r IC info, echo = FALSE, comment = NA>>==
+i <- 7
+color.by <- color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
+ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+                      "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
+                      "Correlated_Covariate" = color.by, 
+                      "p-value" = ica.result$cov.pval.mx[i,color.by], 
+                      "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
+gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
+print(ic.info)
+cat("---- Top 10 Gene Weights ---- \n")
+print(gene.table)
+@
+
+The first two lines summarize the given component by the percent variance, associated covariate, the corresponding p-value for the association, and the number of "peaks". The percent variance is an equivalent to the concept in PCA. Associated covariates are found using ANOVA and called significant if they pass the bonferroni corrected threshold. Peaks are showing the number of genes that have gene weights greater than 2 standard deviations of the given component (more on this to follow). The following lines show the top 10 genes (or probes) contributing the most to the given component and their corresponding gene weight. 
+
+The summarized information is followed by 3 plots that describe a given component. The first plot shows the gene weights for the component sorted by chromosome position.
+
+<< r IC plot1, echo = FALSE, comment = NA, fig.width = 12, fig.height = 3>>==
+probe.info$pheno_chr <- as.character(probe.info$pheno_chr)
+chromosomes <- unique(probe.info$pheno_chr)
+chr.ordered <- gtools::mixedsort(chromosomes)
+probe.info <- probe.info[,c("phenotype","pheno_chr","pheno_start","pheno_end")]
+probe.info <- probe.info[!duplicated(probe.info),]
+probe.info <- probe.info[order(match(probe.info$pheno_chr, chr.ordered), probe.info$pheno_start),]
+probe.info <- probe.info[!duplicated(probe.info$phenotype),]
+probe.info$idx <- c(1:nrow(probe.info))
+
+x.axis <- icreport::chr_axis_creator(probe.info)
+
+plot1 <- icreport::plot_component_chr(ica.result$S[,i, drop = FALSE], 
+                            geneinfo.df = probe.info,
+                            x.axis = x.axis,
+                            plot.title = "Example IC", 
+                            peaks = TRUE, 
+                            peakresult = ica.result$peaks[[i]])
+
+print(icreport::ggplot_add_theme(plot1))
+
+@
+
+Explain peaks, gene weights. 
+
+Each component $\mathbf{s}_j$ can be thought of as a vector with length $g$, where $g$ is equal to the number of measured genes. You can think of each component as a direction in the $g$ dimensional gene space, thus we can assess the importance of a specific gene in each direction by looking at their gene weights (or loadings). For example, if the 3rd entry $g_3$ is the largest for component $\mathbf{s_1}$, we can assume that $g_3$ is the most important gene for component $\mathbf{s_1}$.
+
+
+The next plots are showing the IC coefficients for the given component in a scatter and boxplot. 
+
+<< r IC plot2, echo = FALSE, comment = NA, fig.width = 12, fig.height = 3>>==
+library(ggplot2)
+coeff.plot.df <- data.frame(as.data.frame(sample.info[colnames(ica.result$A),]),
+                            "IC" = ica.result$A[i,],
+                            "idx"= c(1:dim(ica.result$A)[2]))
+
+# Setting the colnames to covariate names
+colnames(coeff.plot.df)[1:dim(as.data.frame(sample.info[colnames(ica.result$A),]))[2]] <- colnames(sample.info) 
+
+
+plot2 <- icreport::plot_coeff_w_legend(coeff.plot.df, k.col = color.by) + 
+                                        theme(legend.position ="none")
+
+number.of.levels <- length(levels(ica.result$sample.info[,color.by]))
+                  
+plot3 <- ggplot(coeff.plot.df, 
+                aes_string(x = color.by, y = "IC", color = color.by)) + 
+                geom_boxplot() + 
+                xlab(paste("Covariate = ",color.by,sep="")) + 
+                ylab("") +  
+                theme(axis.ticks = element_blank(), 
+                      axis.text.x = element_blank())
+
+plot2 <- icreport::ggplot_add_theme(plot2)
+plot3 <- icreport::ggplot_add_theme(plot3)
+
+icreport::multiplot(list(plot2, plot3), cols = 2)
+@
+
+Explain IC coefficients, scenarios where associated covariate exists and doesn't.
+
+
+Explain PC plots as well. 
+
+
+
+
+\end{document}
