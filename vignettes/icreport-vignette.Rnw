@@ -162,10 +162,10 @@ head(probe.info)
 
 @
 
-You can specify the output path using the option \verb|output.path = "/path/to/directory"|. Please note that sometimes directories starting with the short cut for home \verb|"~" |are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
+You can specify the output path using the option \verb|output.path = "/path/to/directory"|. Please note that sometimes directories starting with the short cut for home \verb|"~" |are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path.
 
-<< r ICA report, eval = FALSE, message = FALSE, warning=FALSE, results='hide' >>==
-report2me(input = ica.result, 
+<< r ICA report, eval = FALSE, message = FALSE, warning=FALSE >>==
+report2me(input = ica.result,
           prefix = "Test_ICA_Report",
           geneinfo.df = probe.info)
 @
@@ -176,7 +176,7 @@ You can use the function \verb|gene_expr_pca()| to run PCA on your dataset. Runn
 
 << r PCA w covars, eval = TRUE, message = FALSE, warning=FALSE>>==
 
-pca.result <- gene_expr_pca(phenotype.mx = expr.data, 
+pca.result <- gene_expr_pca(phenotype.mx = expr.data,
                             info.df = sample.info,
                             check.covars = colnames(sample.info))
 
@@ -195,7 +195,7 @@ pca.result <- gene_expr_pca(phenotype.mx = expr.data)
 The process of generating a PCA report is identical to the process of generating an ICA report. \verb|report2me()| automatically detects whether the inputs are ICA or PCA results through the \verb|method| attribute and generates a report with the corresponding format.
 
 << r PCA report, eval = FALSE, message = FALSE, warning=FALSE>>==
-report2me(input = pca.result, 
+report2me(input = pca.result,
           prefix = "Test_PCA_Report",
           geneinfo.df = probe.info)
 @
@@ -208,19 +208,19 @@ Before we describe what each plot in the output report means, let us briefly rev
   \mathbf{y}_i = a_{i1}\mathbf{s}_1 + a_{i2}\mathbf{s}_2 + ... + a_{ik}\mathbf{s}_k
 \end{equation}
 
-where each $\mathbf{s}_j$ for $j = 1,\ ...,\ k $ are the independent components and the corresponding $a_{ij}$s are scalar coefficients that represent the relative weights of each component in sample $\mathbf{y}_i$. 
+where each $\mathbf{s}_j$ for $j = 1,\ ...,\ k $ are the independent components and the corresponding $a_{ij}$s are scalar coefficients that represent the relative weights of each component in sample $\mathbf{y}_i$.
 
 \subsection{Individual IC plots}
 
-Let us begin with the individual IC plots that constitute most of the report. Each individual plot will first have some printed information about the component. 
+Let us begin with the individual IC plots that constitute most of the report. Each individual plot will first have some printed information about the component.
 
 << r IC info, echo = FALSE, comment = NA>>==
 i <- 7
 color.by <- color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
-ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+ic.info <- data.frame(row.names = paste("IC",i,sep = ""),
                       "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
-                      "Correlated_Covariate" = color.by, 
-                      "p-value" = ica.result$cov.pval.mx[i,color.by], 
+                      "Correlated_Covariate" = color.by,
+                      "p-value" = ica.result$cov.pval.mx[i,color.by],
                       "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
 gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
 print(ic.info)
@@ -228,7 +228,7 @@ cat("---- Top 10 Gene Weights ---- \n")
 print(gene.table)
 @
 
-The first two lines summarize the given component by the percent variance, associated covariate, the corresponding p-value for the association, and the number of "peaks". The percent variance is an equivalent to the concept in PCA. Associated covariates are found using ANOVA and called significant if they pass the bonferroni corrected threshold. Peaks are showing the number of genes that have gene weights greater than 2 standard deviations of the given component (more on this to follow). The following lines show the top 10 genes (or probes) contributing the most to the given component and their corresponding gene weight. 
+The first two lines summarize the given component by the percent variance, associated covariate, the corresponding p-value for the association, and the number of "peaks". The percent variance is an equivalent to the concept in PCA. Associated covariates are found using ANOVA and called significant if they pass the bonferroni corrected threshold. Peaks are showing the number of genes that have gene weights greater than 2 standard deviations of the given component (more on this to follow). The following lines show the top 10 genes (or probes) contributing the most to the given component and their corresponding gene weight.
 
 The summarized information is followed by 3 plots that describe a given component. The first plot shows the gene weights for the component sorted by chromosome position.
 
@@ -244,23 +244,23 @@ probe.info$idx <- c(1:nrow(probe.info))
 
 x.axis <- icreport::chr_axis_creator(probe.info)
 
-plot1 <- icreport::plot_component_chr(ica.result$S[,i, drop = FALSE], 
+plot1 <- icreport::plot_component_chr(ica.result$S[,i, drop = FALSE],
                             geneinfo.df = probe.info,
                             x.axis = x.axis,
-                            plot.title = "Example IC", 
-                            peaks = TRUE, 
+                            plot.title = "Example IC",
+                            peaks = TRUE,
                             peakresult = ica.result$peaks[[i]])
 
 print(icreport::ggplot_add_theme(plot1))
 
 @
 
-Explain peaks, gene weights. 
+Explain peaks, gene weights.
 
 Each component $\mathbf{s}_j$ can be thought of as a vector with length $g$, where $g$ is equal to the number of measured genes. You can think of each component as a direction in the $g$ dimensional gene space, thus we can assess the importance of a specific gene in each direction by looking at their gene weights (or loadings). For example, if the 3rd entry $g_3$ is the largest for component $\mathbf{s_1}$, we can assume that $g_3$ is the most important gene for component $\mathbf{s_1}$.
 
 
-The next plots are showing the IC coefficients for the given component in a scatter and boxplot. 
+The next plots are showing the IC coefficients for the given component in a scatter and boxplot.
 
 << r IC plot2, echo = FALSE, comment = NA, fig.width = 12, fig.height = 3>>==
 library(ggplot2)
@@ -269,20 +269,20 @@ coeff.plot.df <- data.frame(as.data.frame(sample.info[colnames(ica.result$A),]),
                             "idx"= c(1:dim(ica.result$A)[2]))
 
 # Setting the colnames to covariate names
-colnames(coeff.plot.df)[1:dim(as.data.frame(sample.info[colnames(ica.result$A),]))[2]] <- colnames(sample.info) 
+colnames(coeff.plot.df)[1:dim(as.data.frame(sample.info[colnames(ica.result$A),]))[2]] <- colnames(sample.info)
 
 
-plot2 <- icreport::plot_coeff_w_legend(coeff.plot.df, k.col = color.by) + 
+plot2 <- icreport::plot_coeff_w_legend(coeff.plot.df, k.col = color.by) +
                                         theme(legend.position ="none")
 
 number.of.levels <- length(levels(ica.result$sample.info[,color.by]))
-                  
-plot3 <- ggplot(coeff.plot.df, 
-                aes_string(x = color.by, y = "IC", color = color.by)) + 
-                geom_boxplot() + 
-                xlab(paste("Covariate = ",color.by,sep="")) + 
-                ylab("") +  
-                theme(axis.ticks = element_blank(), 
+
+plot3 <- ggplot(coeff.plot.df,
+                aes_string(x = color.by, y = "IC", color = color.by)) +
+                geom_boxplot() +
+                xlab(paste("Covariate = ",color.by,sep="")) +
+                ylab("") +
+                theme(axis.ticks = element_blank(),
                       axis.text.x = element_blank())
 
 plot2 <- icreport::ggplot_add_theme(plot2)
@@ -294,7 +294,7 @@ icreport::multiplot(list(plot2, plot3), cols = 2)
 Explain IC coefficients, scenarios where associated covariate exists and doesn't.
 
 
-Explain PC plots as well. 
+Explain PC plots as well.
 
 
 
