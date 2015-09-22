@@ -449,10 +449,10 @@ if (method == "pca"){
   mclust.plots <- list()
   
   mclust.obj <- suppressMessages(Mclust(pca.result$x[,i], modelNames = "V"))
-  mclust.bic.df <- data.frame("V" = mclust.obj$BIC, 
+  mclust.bic.df <- data.frame("V" = as.numeric(mclust.obj$BIC), 
                               "N.clust" = attr(mclust.obj$BIC,"G"))
-  mclust.cer.df <- data.frame("uncertainty" = mclust.obj$uncertainty,
-                              "data" = mclust.obj$data )
+  #mclust.cer.df <- data.frame("uncertainty" = as.numeric(mclust.obj$uncertainty),
+  #                            "data" = mclust.obj$data )
   
   
   if(is.null(pca.result$ordered.geneinfo)){           
