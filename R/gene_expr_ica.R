@@ -31,29 +31,72 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     }
 
     if(is.null(colnames(phenotype.mx))){
-      message("Phenotype.mx is missing column names, set to default. \n")
+      message("<phenotype.mx> is missing column names, set to default. \n")
       colnames(phenotype.mx) <- paste("sample",c(1:ncol(phenotype.mx)), sep = "_")
     }
 
     if(is.null(rownames(phenotype.mx))){
-      message("Phenotype.mx is missing row names, set to default. \n")
+      message("<Phenotype.mx> is missing row names, set to default. \n")
       rownames(phenotype.mx) <- paste("feature",c(1:nrow(phenotype.mx)), sep = "_")
     }
 
     if(is.null(n.cores)){
         n.cores = 1
     }
+
+    pheno.nrow <- nrow(phenotype.mx)
+    pheno.ncol <- ncol(phenotype.mx)
+    message("Original dimensions of <phenotype.mx> = ", pheno.nrow , " x ", pheno.ncol, "\n")
+
+    if (pheno.nrow < pheno.ncol){
+      message("[Caution] Number of samples exceeding number of measured features,
+              please check rows and columns of <phenotype.mx> \n")
+      message("- If you are from the future and have more samples than measured features,
+              disregard the above message and please proceed. \n")
+    }
+
+    if(!is.null(info.df)){
+
+      message("Checking dimensions and column/row names \n")
+
+      if(nrow(info.df) == ncol(phenotype.mx)){
+        message("[Good] Number of samples in <info.df> and <phenotype.mx> match \n")
+      } else {
+        stop("Error: Sample numbers in <info.df> and <phenotype.mx> don't match. Stopping script")
+      }
+
+      matching.names <- sum(rownames(covars) %in% colnames(phenotype.mx))
+
+      if(matching.names == ncol(phenotype.mx)){
+        message("[Good] All samples in <phenotype.mx> are accounted for in <info.df> \n")
+      } else {
+        stop("Missing sample Information: Check rownames of <info.df> and column names of <phenotype.mx>")
+      }
+    }
+
+    if(!is.null(info.df) & is.null(check.covars)){
+      message("- Sample info detected but missing input for <check.covars> \n")
+      message("- Using column names of <info.df> as <check.covars> \n")
+      check.covars <- colnames(info.df)
+    }
+
     message("------ Pre-processing Data ------- \n")
     # removing 0 variance genes and scaling and centering the phenotype matirx
     phenotype.mx <- pre_process_data(phenotype.mx, scale.pheno = scale.pheno)
 
 
     if(is.null(k.est)){
-      message("Missing input for k, using the number of principal components explaining 90% of total variance")
+      message("Missing input for <k.est>, using the number of principal components explaining 90% of total variance \n")
       pca.pheno <- prcomp(t(phenotype.mx))
       percent <- (cumsum(pca.pheno$sdev^2) /sum(pca.pheno$sdev^2)) * 100
       k.est <- which(percent > 90)[1]
-      message(k.est,"components explain more than 90% of the variance")
+      message(k.est," components needed to explain more than 90% of the variance \n")
+
+      if(k.est == 1){
+        stop("1 component explains more than 90% of the variance,
+        check your data or set <k.est> to a number bigger than 1 \n")
+      }
+
 
     }
 
@@ -107,7 +150,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       k.update <- length(multi.component.group)
       message("- ",k.update," Replicating Components Estimated \n")
       if(k.update < 1){
-        stop('None of the ICs replicated. You could try to the increase sample size or n.runs. \n')
+        stop('None of the ICs replicated. You could try to the increase sample size or <n.runs>. \n')
       }
       Avg.S <- matrix(0,nrow = dim(combined.S)[1],ncol = k.update)
       #Avg.A <- matrix(0,nrow = k.update, ncol = dim(combined.A)[2])
@@ -136,7 +179,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       rm(Avg.S)
 
     } else if (n.runs ==1){
-      message("Running ICA once with", k.est," components to be estimated")
+      message("Running ICA once with ", k.est," components to be estimated")
 
       ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
                                       fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
@@ -176,12 +219,6 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     message("- Creating index based on Variance explained \n")
     ica.result$order <- order(percent.var,decreasing = T) # ordering the ICs based on the amount of variance they explain
     ica.result$percent.var <- percent.var
-
-    if(!is.null(info.df) & is.null(check.covars)){
-        message("- Sample info detected but missing check.covars \n")
-        message("- Using column names of info.df as check.covars \n")
-        check.covars <- colnames(info.df)
-    }
 
     # Checking correlation between IC coefficients and measured covariates
     if(!is.null(check.covars) & !is.null(info.df)){

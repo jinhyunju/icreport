@@ -21,6 +21,43 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       message("Please specify phenotype matrix \n")
       break;
     }
+
+    pheno.nrow <- nrow(phenotype.mx)
+    pheno.ncol <- ncol(phenotype.mx)
+    message("phenotype.mx dimensions = ", pheno.nrow , " x ", pheno.ncol, "\n")
+
+    if (pheno.nrow < pheno.ncol){
+      message("[Caution] Number of samples exceeding number of measured features,
+              please check rows and columns of <phenotype.mx> \n")
+      message("- If you are from the future and have more samples than measured features,
+              disregard the above message and please proceed. \n")
+    }
+
+    if(!is.null(info.df)){
+
+      message("Checking dimensions and column/row names \n")
+
+      if(nrow(info.df) == ncol(phenotype.mx)){
+        message("[Good] Number of samples in <info.df> and <phenotype.mx> match \n")
+      } else {
+        stop("Error: Sample numbers in <info.df> and <phenotype.mx> don't match. Stopping script")
+      }
+
+      matching.names <- sum(rownames(covars) %in% colnames(phenotype.mx))
+
+      if(matching.names == ncol(phenotype.mx)){
+        message("[Good] All samples in <phenotype.mx> are accounted for in <info.df> \n")
+      } else {
+        stop("Missing sample Information: Check rownames of <info.df> and column names of <phenotype.mx>")
+      }
+    }
+
+    if(!is.null(info.df) & is.null(check.covars)){
+      message("- Sample info detected but missing input for <check.covars> \n")
+      message("- Using column names of <info.df> as <check.covars> \n")
+      check.covars <- colnames(info.df)
+    }
+
     message("Pre Processing Data \n")
     # removing NA values, centering, scaling (optional)
     phenotype.mx <- pre_process_data(phenotype.mx,
@@ -46,7 +83,7 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       # row and column positions for significant p-values
       corr.idx <- which(pca.result$cov.pval.mx < cor.threshold, arr.ind = T)
     } else{
-      message("No info.df supplied, association test skipped.\n")
+      message("No <info.df> supplied, association test skipped.\n")
       corr.idx <- NULL
     }
 

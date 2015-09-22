@@ -217,7 +217,12 @@ if (method == "pca"){
   multiplot(plotlist = list(summary.plots[[3]], summary.plots[[4]]),cols = 2)
 
   }
-  x.axis <- chr_axis_creator(pca.result$ordered.geneinfo)
+  if(!is.null(pca.result$ordered.geneinfo)){
+    # create axis tick positions for chromosomes if gene info is supplied
+    # the same axis tick positions are used for every plot so it only needs to be calculated once
+    x.axis <- chr_axis_creator(pca.result$ordered.geneinfo)
+  }
+  
 }
 
 ```
@@ -263,7 +268,7 @@ if(method == "ica"){
           mclust.plots <- list()
          
          # Plot IC loading with peaks labeled in red (If peaks are available)
-         if(is.null(ica.result$ordered.geneinfo)){           
+         if(is.null(ica.result$ordered.geneinfo)){ # If gene info is missing           
            if(!is.null(ica.result$peaks)){
                 # If the peaks are labeled use them 
                 mclust.plots[[1]] <- plot_component(ica.result$S[,i, drop = FALSE],peaks = TRUE, 
