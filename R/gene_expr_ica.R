@@ -65,7 +65,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
         stop("Error: Sample numbers in <info.df> and <phenotype.mx> don't match. Stopping script")
       }
 
-      matching.names <- sum(rownames(covars) %in% colnames(phenotype.mx))
+      matching.names <- sum(rownames(info.df) %in% colnames(phenotype.mx))
 
       if(matching.names == ncol(phenotype.mx)){
         message("[Good] All samples in <phenotype.mx> are accounted for in <info.df> \n")
