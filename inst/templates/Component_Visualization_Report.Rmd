@@ -466,6 +466,7 @@ if (method == "pca"){
                                       plot.title = paste(data.set,"_PC#_",i,sep =""), 
                                       peaks = TRUE, 
                                       peakresult = pca.result$peaks[[i]])
+      mclust.plots[[1]] <- mclust.plots[[1]] + theme(axis.text.x = element_text(angle = 45, hjust = 1))
       
       
   }
