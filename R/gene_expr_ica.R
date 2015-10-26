@@ -23,7 +23,7 @@
 gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NULL,
                     k.est = NULL, scale.pheno = FALSE, h.clust.cutoff = 0.3,
                     n.runs = 5, max.iter = 10, n.cores = NULL, cor.threshold = 0.05,
-                    similarity.measure = "peaks"){
+                    similarity.measure = "peaks", var.cutoff = 99){
 
     if(is.null(phenotype.mx)){
         stop("Error: Phenotype matrix is missing \n")
@@ -89,11 +89,11 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
       message("Missing input for <k.est>, using the number of principal components explaining 90% of total variance \n")
       pca.pheno <- prcomp(t(phenotype.mx))
       percent <- (cumsum(pca.pheno$sdev^2) /sum(pca.pheno$sdev^2)) * 100
-      k.est <- which(percent > 90)[1]
-      message(k.est," components needed to explain more than 90% of the variance \n")
+      k.est <- which(percent > var.cutoff)[1]
+      message(k.est," components needed to explain more than ",var.cutoff,"% of the variance \n")
 
       if(k.est == 1){
-        stop("1 component explains more than 90% of the variance,
+        stop("1 component explains more than",var.cutoff,"% of the variance,
         check your data or set <k.est> to a number bigger than 1 \n")
       }
 
