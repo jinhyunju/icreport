@@ -86,7 +86,7 @@ gene_expr_ica <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
 
 
     if(is.null(k.est)){
-      message("Missing input for <k.est>, using the number of principal components explaining 90% of total variance \n")
+      message("Missing input for <k.est>, using the number of principal components explaining 99% of total variance \n")
       pca.pheno <- prcomp(t(phenotype.mx))
       percent <- (cumsum(pca.pheno$sdev^2) /sum(pca.pheno$sdev^2)) * 100
       k.est <- which(percent > var.cutoff)[1]
