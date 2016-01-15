@@ -147,15 +147,6 @@ report2me(input = pca_result,
 ```
 
 
-### Interpreting Outputs
-
-- Before we describe what each plot in the output report means, let us briefly review the model of ICA. 
-
-1. ICA decomposes the observed dataset $\mathbf{Y}$ into $k$ independent components and their corresponding coefficients. 
-
-$$ \mathbf{Y} = \mathbf{A}\mathbf{S} $$
-
-where $\mathbf{Y}$ is the N x g observed data matrix, $\mathbf{A}$ is the N x k coefficient matrix (also known as the mixing matris), and $\mathbf{S}$ is the k x g independent component matrix. 
 
 
 Special Thanks to: Sushila, Francisco, Monica, Priya, Adrian, and Jason B. for testing and feedback. 
