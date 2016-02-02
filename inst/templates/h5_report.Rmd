@@ -1,0 +1,320 @@
+## eQTL Data Summary Report
+
++ Generated with R package icreport
+
+```{r global_options, include=FALSE}
+# setting global options 
+figure.outpath <- paste(output.path,"/h5report_figures/",data.set,"/",sep="")
+options(warn=-1,width = 100)
+library(icreport)
+library(ggplot2)
+library(googleVis)
+flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
+
+```
+
+
+```{r Data_info,echo= FALSE, comment=NA}
+data_info_df <- data.frame("N_samples" = n_samples,
+						   "N_phenotypes" = n_pheno,
+						   "N_genotypes" = n_geno)
+cat("Dataset = ", data.set, "\n")
+print(data_info_df)
+```
+
+### Phenotype PCA plots
+
+---
+
+```{r PC_summary,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
+
+pheno_pca_df <- data.frame("PC1" = pheno_pca$x[,1],
+                          "PC2" = pheno_pca$x[,2],
+                          "VarPercent" = pheno_pca$var.percent, 
+                          "idx" = c(1:length(pheno_pca$var.percent)))
+							 
+pc_plots <- list()
+
+pc_plots[[1]] <- ggplot(pheno_pca_df,
+                        aes(x = idx, y = VarPercent)) + geom_bar(stat = 'identity') +
+                        xlab("PC index") + ylab("Variance Explained") + 
+                        labs(title ="Variance by Component")
+							   
+pc_plots[[2]] <- ggplot(pheno_pca_df, 
+                        aes(x = PC1, y = PC2)) + 
+                        geom_point(size = 3) + xlab("PC1") + ylab("PC2")
+
+for( p in 1:length(pc_plots)){
+	pc_plots[[p]] <- ggplot_add_theme(pc_plots[[p]])
+}
+
+multiplot(plotlist = list(pc_plots[[1]], pc_plots[[2]]),cols = 2)
+
+
+```
+
+
+#### Principal Component 1 Details
+
+```{r PC_pheno1_sig, echo = FALSE, fig.width = 14,fig.height = 4 }
+pc1_plot <- plot_component_grid(s = pheno_pca$rotation[,1], 
+                         geneinfo_df = gene_info,
+                         plot.title = paste(data.set,"_PC1",sep =""))
+
+pc1_plot <- ggplot_add_theme(pc1_plot) + theme(strip.background = element_rect(fill="skyblue"))
+
+print(pc1_plot)
+```
+
+```{r PC_pheno1_proj, echo = FALSE, fig.width = 5,fig.height = 3 }
+pc1_proj <- ggplot(pheno_pca_df, aes(x = idx, y = PC1)) + 
+                  geom_point() + 
+                  xlab("Sample idx") + 
+                  ylab("PC projections")
+
+pc1_proj <- ggplot_add_theme(pc1_proj)
+
+print(pc1_proj)
+```
+
+#### Principal Component 2 Details
+
+```{r PC_pheno2_sig, echo = FALSE, fig.width = 14,fig.height = 4 }
+pc2_plot <- plot_component_grid(s = pheno_pca$rotation[,2], 
+                         geneinfo_df = gene_info,
+                         plot.title = paste(data.set,"_PC2",sep =""))
+
+pc2_plot <- ggplot_add_theme(pc2_plot) + theme(strip.background = element_rect(fill="skyblue"))
+
+print(pc2_plot)
+```
+
+```{r PC_pheno2_proj, echo = FALSE, fig.width = 5, fig.height = 3 }
+pc2_proj <- ggplot(pheno_pca_df, aes(x = idx, y = PC2)) + 
+        geom_point() + 
+        xlab("Sample idx") + 
+        ylab("PC projections")
+
+pc2_proj <- ggplot_add_theme(pc2_proj)
+
+print(pc2_proj)
+```
+
+### Genotype PCA plots
+
+---
+
+```{r PC_geno,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
+
+geno_pca_df <- data.frame("PC1" = geno_pca$x[,1],
+                          "PC2" = geno_pca$x[,2],
+                          "VarPercent" = geno_pca$var.percent, 
+                          "idx" = c(1:length(geno_pca$var.percent)))
+							 
+pc_plots <- list()
+
+pc_plots[[1]] <- ggplot(geno_pca_df,
+                        aes(x = idx, y = VarPercent)) + geom_bar(stat = 'identity') +
+                        xlab("PC index") + ylab("Variance Explained") + 
+                        labs(title ="Variance by Component")
+							   
+pc_plots[[2]] <- ggplot(geno_pca_df, 
+                        aes(x = PC1, y = PC2)) + 
+                        geom_point(size = 3) + xlab("PC1") + ylab("PC2")
+
+for( p in 1:length(pc_plots)){
+	pc_plots[[p]] <- ggplot_add_theme(pc_plots[[p]])
+}
+
+multiplot(plotlist = list(pc_plots[[1]], pc_plots[[2]]),cols = 2)
+
+
+```
+
+#### Principal Component 1 Details
+
+```{r PC_geno1_sig, echo = FALSE, fig.width = 14,fig.height = 4 }
+pc1_plot <- plot_component_grid(s = geno_pca$rotation[,1], 
+                             geneinfo_df = snp_info,
+                             plot.title = paste(data.set,"_PC1",sep =""))
+
+pc1_plot <- ggplot_add_theme(pc1_plot) + theme(strip.background = element_rect(fill="skyblue"))
+
+print(pc1_plot)
+```
+
+```{r PC_geno1_proj, echo = FALSE, fig.width = 5,fig.height = 3 }
+pc1_proj <- ggplot(geno_pca_df, aes(x = idx, y = PC1)) + 
+                  geom_point() + 
+                  xlab("Sample idx") + 
+                  ylab("PC projections")
+
+pc1_proj <- ggplot_add_theme(pc1_proj)
+
+print(pc1_proj)
+```
+
+#### Principal Component 2 Details
+
+```{r PC_geno2_sig, echo = FALSE, fig.width = 14,fig.height = 4 }
+pc2_plot <- plot_component_grid(s = geno_pca$rotation[,2], 
+                         geneinfo_df = snp_info,
+                         plot.title = paste(data.set,"_PC2",sep =""))
+
+pc2_plot <- ggplot_add_theme(pc2_plot) + theme(strip.background = element_rect(fill="skyblue"))
+
+print(pc2_plot)
+```
+
+```{r PC_geno2_proj, echo = FALSE, fig.width = 5,fig.height = 3 }
+pc2_proj <- ggplot(geno_pca_df, aes(x = idx, y = PC2)) + 
+        geom_point() + 
+        xlab("Sample idx") + 
+        ylab("PC projections")
+
+pc2_proj <- ggplot_add_theme(pc2_proj)
+
+print(pc2_proj)
+```
+
+
+```{r gvis_chart,echo= FALSE, comment=NA,eval = FALSE, results = 'asis'}
+pca_pheno_df <- data.frame("pheno_pc1" = pheno_pca$x[,1],
+		 				   "pheno_pc2" = pheno_pca$x[,2])
+
+pca_pheno_df$pop.html.tooltip <- as.character(gsub("[.]","",sample_ids))
+
+sc <- gvisScatterChart(data=pca_pheno_df,
+                        options=list(width=500, height=500, 
+                                     legend='none',
+                                     hAxis="{title:'PC1'}",
+                                     vAxis="{title:'PC2'}"))
+
+pca_geno_df <- data.frame("geno_pc1" = geno_pca$x[,1],
+		 				  "geno_pc2" = geno_pca$x[,2])
+
+pca_geno_df$pop.html.tooltip <- as.character(gsub("[.]","",sample_ids))
+
+sc2 <- gvisScatterChart(data=pca_geno_df,
+                        options=list(width=500, height=500, 
+                                     legend='none',
+                                     hAxis="{title:'PC1'}",
+                                     vAxis="{title:'PC2'}"))
+#print(sc, 'chart')
+merged_plots <- gvisMerge(sc, sc2, horizontal = TRUE)
+print(merged_plots, 'chart')
+
+```
+
+### Phenotype Information 
+
+---
+
+#### Phenotype variance plot per chromosome
+
+```{r gene_var,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 4}
+
+
+var_plot <- ggplot(gene_info, aes(x = chr, y = var, group = chr, col = chr)) + 
+                geom_boxplot(col = "royalblue") + 
+                theme(legend.position = 'none') +labs(title = "Gene Variance plot") 
+var_plot <- ggplot_add_theme(var_plot) 
+
+print(var_plot)
+
+```
+
+#### Phenotype counts per chromosome
+
+
+```{r gene_count,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 3}
+
+gene_count_plot <- ggplot(gene_info, aes(x = chr, group = chr)) + 
+                geom_bar(stat = 'count', fill = "royalblue", col = "black") + 
+                theme(legend.position = 'none') +labs(title = "Gene Count plot") 
+gene_count_plot <- ggplot_add_theme(gene_count_plot) 
+
+print(gene_count_plot)
+
+```
+
+
+#### Phenotype distribution density plot
+
+```{r, comment = FALSE, echo = FALSE,fig.show = "hold",fig.width = 5,fig.height = 4}
+
+centered_pheno <- apply(phenotypes, 2, function(x) x - mean(x))
+
+density_list <- apply(centered_pheno, 2, density)
+
+x_min <- Reduce(min, lapply(density_list, function(x) x$x))
+x_max <- Reduce(max, lapply(density_list, function(x) x$x))
+y_max <- Reduce(max, lapply(density_list, function(x) x$y))
+
+p1 <- density_list[[1]]
+plot(p1, xlim = c(x_min,x_max), ylim = c(0,y_max), col = rgb(0.25,0.4117,0.8823, alpha = 0.5), main = "Phenotype Density Plot")
+for( i in 2:length(density_list)){
+    lines(density_list[[i]], col = rgb(0.25,0.4117,0.8823, alpha = 0.3))
+}
+```
+
+### Genotype Information 
+
+---
+
+#### SNP density 
+
+```{r snp_density,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 4}
+
+# Get unique chromosome names
+chrom.names <- unique(snp_info$chr)
+
+# Calculate snp densities with tapply 
+snp.densities <- with(snp_info, tapply(position, chr, density, cut=0))[chrom.names]
+
+# get max position for defining plot boundaries
+max.pos <- max(snp_info$position)
+
+# calculate x and y densities 
+dens.x <- lapply(snp.densities, 
+                 function (d) c(min(d$x), d$x, max(d$x), rev(d$x), min(d$x))/max.pos)
+dens.y <- lapply(snp.densities, 
+                 function (d) c(0, d$y/max(d$y), 0, -rev(d$y)/max(d$y), 0)/2*0.9)
+
+par(mar=c(3, 3, 1, 0.5))
+plot(0, type='n', xlim=c(1, length(snp.densities)), ylim=0:1, ylab='', xlab='', xaxt='n', yaxt='n')
+ignore <- sapply(1:length(chrom.names), function (cn) polygon(dens.y[[cn]]+cn, dens.x[[cn]], col='#333333'))
+axis(1, 1:length(chrom.names), chrom.names, las=2)
+axis(2, pretty(snp_info$position)/max.pos, pretty(snp_info$position)/1e6, las=2)
+
+```
+
+#### SNP count per chromosome
+
+```{r snp_count,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 3}
+
+snp_count_plot <- ggplot(snp_info, aes(x = chr, group = chr)) + 
+                geom_bar(stat = 'count',fill = 'forestgreen', col = "black") + 
+                theme(legend.position = 'none') +labs(title = "SNP Count plot") 
+snp_count_plot <- ggplot_add_theme(snp_count_plot) 
+
+print(snp_count_plot)
+
+```
+
+#### Allele Frequency Information
+
+```{r MAF,echo= FALSE, comment=NA, fig.width = 8,fig.height = 4}
+cat("Minor Allele Frequency\n")
+
+hist(snp_info$MAF, main = "MAF Histogram", col = "forestgreen")
+
+summary(snp_info$MAF)
+#MAF_plot <- ggplot(snp_info, aes(x = chr, y= MAF,group = chr, col = chr)) + 
+#                geom_violin() + 
+#                theme(legend.position = 'none') +labs(title = "MAF plot") 
+
+#MAF_plot <- ggplot_add_theme(MAF_plot) 
+
+#print(MAF_plot)
+```
