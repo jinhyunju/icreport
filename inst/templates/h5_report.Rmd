@@ -53,6 +53,14 @@ multiplot(plotlist = list(pc_plots[[1]], pc_plots[[2]]),cols = 2)
 
 ```
 
+```{r PC_variance, echo=FALSE, comment=NA}
+cum_var <- cumsum(pheno_pca$var.percent)
+k_est <- which(cum_var > 95)[1]
+
+total_pc <- length(pheno_pca$var.percent)
+cat(k_est, "out of", total_pc, "PCs explain > 95% of variance in the data") 
+
+```
 
 #### Principal Component 1 Details
 
@@ -128,6 +136,16 @@ for( p in 1:length(pc_plots)){
 
 multiplot(plotlist = list(pc_plots[[1]], pc_plots[[2]]),cols = 2)
 
+
+```
+
+```{r PC_variance_geno, echo=FALSE, comment=NA}
+
+cum_var <- cumsum(geno_pca$var.percent)
+k_est <- which(cum_var > 95)[1]
+
+total_pc <- length(geno_pca$var.percent)
+cat(k_est, "out of", total_pc, "PCs explain > 95% of variance in the data") 
 
 ```
 
