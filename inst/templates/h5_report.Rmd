@@ -196,7 +196,7 @@ print(pc2_proj)
 ```
 
 
-```{r gvis_chart,echo= FALSE, comment=NA,eval = FALSE, results = 'asis'}
+```{r gvis_chart,echo= FALSE, comment=NA,eval = TRUE, results = 'asis'}
 pca_pheno_df <- data.frame("pheno_pc1" = pheno_pca$x[,1],
 		 				   "pheno_pc2" = pheno_pca$x[,2])
 
