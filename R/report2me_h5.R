@@ -45,8 +45,8 @@ h5report <- function(input_h5 = NULL,
     snp_position <- h5read(input_h5, "genotypes/col_info/geno_pos")
 
 
-    covars <- h5read(input_h5, "covars/matrix")
-    colnames(covars) <- h5read(input_h5, "covars/col_info/id")
+#    covars <- h5read(input_h5, "covars/matrix")
+#    colnames(covars) <- h5read(input_h5, "covars/col_info/id")
     sample_ids <- h5read(input_h5, "phenotypes/row_info/id")
 
     message("Running PCA on phenotypes")
@@ -107,18 +107,18 @@ h5report <- function(input_h5 = NULL,
 
 plot_component_grid <- function(s,geneinfo_df,plot.title){
 
-  
+
   geneinfo_df$loading <- s
   geneinfo_df$peaks <- 1 * (abs(geneinfo_df$loading) > (2 * sd(geneinfo_df$loading)))
 #  geneinfo_df <- with(geneinfo_df, geneinfo_df[order(chr, loading),])
   geneinfo_df$idx <- c(1:nrow(geneinfo_df))
   chromosomes <- unique(geneinfo_df$chr)
-  
+
   x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
-  
+
   for(k in 1:length(chromosomes)){
     j <- chromosomes[k]
-    
+
     if(is.na(j)){
       x.axis[1,k] <- max(x.axis[1,]) + 1
       x.axis[2,k] <- max(geneinfo_df[,"idx"])
@@ -126,17 +126,17 @@ plot_component_grid <- function(s,geneinfo_df,plot.title){
       x.axis[1,k] <- min(subset(geneinfo_df, chr == j)[,"idx"])
       x.axis[2,k] <- max(subset(geneinfo_df, chr == j)[,"idx"])
     }
-    
-    
+
+
   }
-  
+
   x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
-  
+
   plot.title <- paste0(plot.title,"_",sum(geneinfo_df$peaks),"peaks")
-  
+
   rect_left <- x.axis[1,]
   rect_right <- x.axis[2,]
-  
+
   rects1 <- data.frame(
     xstart = rect_left,
     xend = rect_right,
@@ -144,16 +144,16 @@ plot_component_grid <- function(s,geneinfo_df,plot.title){
     loading = rep(0),
     fill.col = factor(rep(c(0,1), length.out = length(rect_left)))
   )
-  
-  
-  p <- ggplot(geneinfo_df, aes_string(x = "idx", y = "loading")) + 
-              geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) + 
+
+
+  p <- ggplot(geneinfo_df, aes_string(x = "idx", y = "loading")) +
+              geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) +
  #             geom_rect(data = rects1, aes_string(xmin = "xstart",
 #                                                  xmax = "xend",
 #                                                  ymin = "-Inf",
 #                                                  ymax = "Inf",
-#                                                  fill = "fill.col"), alpha = 0.35) + 
-    theme(axis.ticks = element_blank(), axis.text.x = element_blank())+ 
+#                                                  fill = "fill.col"), alpha = 0.35) +
+    theme(axis.ticks = element_blank(), axis.text.x = element_blank())+
     facet_grid(.~chr, scales = "free_x", space = "free_x") + labs(title = plot.title) +
 #    scale_x_continuous("Gene Chromosome Location",breaks=x.axis[3,],labels=unique(geneinfo_df$chr))+
 #    scale_y_continuous(expand = c(0, 0)) +
@@ -161,7 +161,7 @@ plot_component_grid <- function(s,geneinfo_df,plot.title){
     scale_fill_manual(values=c("skyblue", NA)) +
     ylab("Gene Weights") + xlab("") +
     theme(legend.position="none")
-  
+
   return(p)
 }
 
