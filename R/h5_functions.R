@@ -113,17 +113,34 @@ h5_add_data <- function(file_name = NULL,
 #' @export
 
 h5_add_snp_info <- function(file_name = NULL,
-                            snp_info = NULL,
-                            id_col = "id",
-                            chr_col = "chromosome",
-                            pos_col = "position"){
+                            snp_id = NULL,
+                            snp_chr = NULL,
+                            snp_pos = NULL){
 
-  snp_chr <- gsub("chr", "", as.character(snp_info[, chr_col]))
-  h5write(snp_chr, file_name, "genotypes/col_info/geno_chr")
-  h5write(as.numeric(snp_info[,pos_col]), file_name, "genotypes/col_info/geno_pos")
-  h5write(as.character(snp_info[,id_col]), file_name, "genotypes/col_info/id")
+  if(is.null(snp_id)){
+      stop("SNP id not specified, please specify SNP ids that match genotype feature ids")
+  }
+  if(is.null(snp_chr)){
+      stop("SNP chromosomes not specified.")
+  }
+  if(is.null(snp_pos)){
+      stop("SNP position not specified.")
+  }
 
-  H5close()
+  if( length(snp_id) == length(snp_chr) & length(snp_id) == length(snp_pos) ) {
+      saved_ids <- h5read(file_name, "genotypes/col_info/id")
+      matched_idx <- match(snp_id, saved_ids)
+      sorted_chr <- gsub("chr", "", as.character(snp_chr[matched_idx]))
+      sorted_pos <- snp_pos[matched_idx]
+
+      h5write(sorted_chr, file_name, "genotypes/col_info/geno_chr")
+      h5write(as.numeric(sorted_pos), file_name, "genotypes/col_info/geno_pos")
+
+      H5close()
+
+  } else {
+      stop("Input data size mismatch. Aborting function.")
+  }
 
 }
 
