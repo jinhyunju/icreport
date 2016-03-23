@@ -248,7 +248,7 @@ print(var_plot)
 ```{r gene_count,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 3}
 
 gene_count_plot <- ggplot(gene_info, aes(x = chr, group = chr)) + 
-                geom_bar(stat = 'count', fill = "royalblue", col = "black") + 
+                geom_bar( fill = "royalblue", col = "black") + 
                 theme(legend.position = 'none') +labs(title = "Gene Count plot") 
 gene_count_plot <- ggplot_add_theme(gene_count_plot) 
 
@@ -312,7 +312,7 @@ axis(2, pretty(snp_info$position)/max.pos, pretty(snp_info$position)/1e6, las=2)
 ```{r snp_count,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 12,fig.height = 3}
 
 snp_count_plot <- ggplot(snp_info, aes(x = chr, group = chr)) + 
-                geom_bar(stat = 'count',fill = 'forestgreen', col = "black") + 
+                geom_bar(fill = 'forestgreen', col = "black") + 
                 theme(legend.position = 'none') +labs(title = "SNP Count plot") 
 snp_count_plot <- ggplot_add_theme(snp_count_plot) 
 
