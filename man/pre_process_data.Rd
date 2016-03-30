@@ -3,27 +3,27 @@
 \alias{pre_process_data}
 \title{Pre-processing of the data}
 \usage{
-pre_process_data(phenotype.mx, scale.pheno = TRUE)
+pre_process_data(input_matrix, scale_features = TRUE)
 }
 \arguments{
-\item{phenotype.mx}{Phenotype matrix with a dimension of g X N  \code{phenotype.mx}}
+\item{input_matrix}{Input matrix with a dimension of g X N  \code{input_matrix}}
 
-\item{scale.pheno}{If TRUE phenotypes are scaled to have unit standard deviation.}
+\item{scale_features}{If TRUE features are scaled to have unit standard deviation.}
 }
 \value{
-Pre-processed phenotype matrix
+Pre-processed data matrix
 }
 \description{
-The function takes in a g x N matrix, where g is the number of genes and N is the number of samples,
+The function takes in a g x N matrix, where g is the number of features and N is the number of samples,
 and removes any 0 variance entries followed by mean centering.
 If scaling option is true it will scale all rows to have unit standard deviation.
 }
 \examples{
 raw.data <- rbind(rnorm(100,2,3),rnorm(100,10,2))
-centered <- pre_process_data(raw.data, scale.pheno = FALSE)
+centered <- pre_process_data(raw.data, scale_features = FALSE)
 apply(centered, 1, mean)
 apply(centered, 1, sd)
-centered.scaled <- pre_process_data(raw.data, scale.pheno = TRUE)
+centered.scaled <- pre_process_data(raw.data, scale_features = TRUE)
 apply(centered.scaled, 1, mean)
 apply(centered.scaled, 1, sd)
 }

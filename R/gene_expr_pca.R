@@ -126,7 +126,7 @@ gene_expr_pca <- function(phenotype.mx = NULL, info.df = NULL, check.covars = NU
     return(pca.result)
 }
 
-#' Custom PCA function for analyzing gene expression data.
+#' Custom PCA function for analyzing genotype SNP data.
 #'
 #' Performing PCA on a dataset and create a list object with results.
 #'
