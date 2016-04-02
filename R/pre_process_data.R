@@ -5,21 +5,21 @@
 #' If scaling option is true it will scale all rows to have unit standard deviation.
 #'
 #' @param input_matrix Input matrix with a dimension of g X N  \code{input_matrix}
-#' @param scale_features If TRUE features are scaled to have unit standard deviation.
+#' @param scale.pheno If TRUE features are scaled to have unit standard deviation.
 #' @return Pre-processed data matrix
 #' @keywords keywords
 #'
 #'
 #' @examples
 #' raw.data <- rbind(rnorm(100,2,3),rnorm(100,10,2))
-#' centered <- pre_process_data(raw.data, scale_features = FALSE)
+#' centered <- pre_process_data(raw.data, scale.pheno = FALSE)
 #' apply(centered, 1, mean)
 #' apply(centered, 1, sd)
-#' centered.scaled <- pre_process_data(raw.data, scale_features = TRUE)
+#' centered.scaled <- pre_process_data(raw.data, scale.pheno = TRUE)
 #' apply(centered.scaled, 1, mean)
 #' apply(centered.scaled, 1, sd)
 #' @export
-pre_process_data <- function(input_matrix, scale_features = TRUE){
+pre_process_data <- function(input_matrix, scale.pheno = TRUE){
     var.vec <- apply(input_matrix, 1, var)
     var0.count <- sum(var.vec == 0)
 
@@ -33,7 +33,7 @@ pre_process_data <- function(input_matrix, scale_features = TRUE){
     }
 
 
-    if(scale_features == TRUE){
+    if(scale.pheno == TRUE){
         message("- Centering and Scaling Input Matrix \n")
         # scale Input matrix to have 0 mean and 1 sd
         input_matrix <- t(apply(input_matrix, 1, function(x) (x - mean(x))/sd(x)))
