@@ -224,7 +224,7 @@ h5_add_pheno_info <- function(file_name = NULL,
 #' @import rhdf5
 #' @export
 
-load_data <- function(input_file = NULL, data_type = c("phenotypes","genotypes", "covars")){
+load_h5_data <- function(input_file = NULL, data_type = c("phenotypes","genotypes", "covars")){
     data_matrix <- h5read(input_file, paste0(data_type,"/matrix"))
     rownames(data_matrix) <- h5read(input_file, paste0(data_type,"/row_info/id"))
     colnames(data_matrix) <- h5read(input_file, paste0(data_type,"/col_info/id"))
