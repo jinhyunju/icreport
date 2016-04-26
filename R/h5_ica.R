@@ -141,38 +141,8 @@ ica_covar_check <- function(ica_list = NULL,
     message("- Checking associations between ICs and covariates \n")
     # Anova analysis for covariates vs ICA weights (A matrix)
     cov.pval.mx <- ic_covariate_association_test(A_mx,covars)
-    # Multiple Hypothesis correction
-    corrected.threshold <- cor.threshold / (dim(cov.pval.mx)[1] * dim(cov.pval.mx)[2])
-    corr.idx <- which(cov.pval.mx < corrected.threshold, arr.ind = T)
 
-    sig <- rep(0,nrow(A_mx))
-    sig_covars <- rep(0,nrow(A_mx))
-
-    if(length(corr.idx) != 0 ){
-      message(nrow(corr.idx), " associations detected")
-      correlated.ic <- unique(corr.idx[,1])
-
-        for( c in 1:length(correlated.ic)){
-          ic.index <- correlated.ic[c]
-          sig_covars[ic.index] <- which.min(cov.pval.mx[ic.index,])
-          sig[ic.index] <- 1
-        }
-    } else {
-      message("No ICs were correlated with covariates")
-
-    }
-    options(warn=-1)
-    mclust.result <- apply(A_mx, 1, function(x) mclust::Mclust(x))
-    # Turn warnings back on to prevent disasters
-    options(warn=0)
-
-    ica.stat.df <- data.frame("N.peaks"=sapply(ica_list$peaks, function(x) length(x)), # Number of peaks for each IC
-                              "n.clust"= sapply(mclust.result, function(x) x$G),      # Number of predicted clusters
-                              "percent.var" = ica_list$percent_var,                   # Percent variance explained
-                              "covar_corr" = factor(sig), "covar_idx" = sig_covars,"idx" = c(1:nrow(A_mx)))         # if correlated with covariate = 1 , 0 otherwise
-
-
-    return(ica.stat.df)
+    return(cov.pval.mx)
 }
 
 
@@ -210,4 +180,55 @@ ic_covariate_association_test <- function(input.A, info.input){
     }
   }
   return(pval.mx)
+}
+
+#' @import lrgpr
+#' @import formula.tools
+#' @export
+ica_genotype_association <- function(ica.result,
+                                     h5_file = NULL,
+                                     genotype.mx = NULL,
+                                     n.cores = 1){
+  if(is.null(ica.result)){
+      stop("ICA input missing")
+  }
+
+  if(is.null(genotype.mx) & !is.null(h5_file)){
+    message("Loading genotypes from HDF5 file \n")
+    genotype.mx <- load_h5_data(h5_file, "genotypes")
+  } else if (is.null(genotype.mx) & is.null(h5_file)){
+    stop("Missing input for genotypes, please specify genotype object or h5 file")
+  }
+
+  ica.loadings <- t(ica.result$A)
+
+  ic.vs.geno <- glmApply(ica.loadings ~ SNP,
+                         features = genotype.mx,
+                         nthreads = n.cores)$pValues
+
+  colnames(ic.vs.geno) <- rownames(ica.result$A)
+  #sig <- which(ic.vs.geno < (0.05/length(ic.vs.geno) ), arr.ind = TRUE)
+
+  #genetic.factors <- colnames(ic.vs.geno)[unique(sig[,"col"])]
+  #non.genetic <- colnames(ic.vs.geno)[which(!(colnames(ic.vs.geno) %in% genetic.factors))]
+
+  return(ic.vs.geno)
+}
+
+#' @export
+get_gene_info <- function(h5_file){
+  gene_id <- h5read(h5_file, "phenotypes/col_info/id")
+  gene_chr <- h5read(h5_file, "phenotypes/col_info/pheno_chr")
+  gene_start <- h5read(h5_file, "phenotypes/col_info/pheno_start")
+  gene_info_df <- data.frame("id" = gene_id,
+                             "pheno_chr" = gene_chr,
+                             "pheno_start" = gene_start,
+                             "idx" = 1:length(gene_id),
+                             stringsAsFactors = FALSE)
+  return(gene_info_df)
+}
+
+#' @export
+as.character.formula <- function(x){
+  Reduce( paste, deparse(x) )
 }

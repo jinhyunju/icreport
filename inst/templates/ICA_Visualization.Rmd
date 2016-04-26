@@ -1,0 +1,263 @@
+## Component Visualization Report 
+
++ Generated with R package icreport
+
+```{r global_options, include=FALSE}
+# setting global options 
+figure.outpath <- paste(output.path,"/icreport_figures/",prefix,"/",sep="")
+opts_chunk$set(fig.path=figure.outpath,dev=file.ext, warning=FALSE, message=FALSE)
+options(warn=-1,width = 100)
+flower.palette <- c("#283545","#E09E12","#A72613","#95CDDC","#395717","#3A3B35","#D68931","#442243")
+```
+
+```{r, echo = FALSE, comment = ""}
+
+cat("-----------------------------------------------------------\n")
+cat("Independent Component Analysis Report \n")
+cat("-----------------------------------------------------------\n")
+
+```
+
+### Covariate Correlation Summary
+
+```{r Covariate_correlation_summary_ICA,echo= FALSE, comment=NA, fig.show = "hold", fig.width = 14,fig.height = 6 }
+
+A_mx <- ica_result$A
+
+options(warn=-1)
+mclust.result <- apply(A_mx, 1, function(x) mclust::Mclust(x))
+# Turn warnings back on to prevent disasters
+options(warn=0)
+
+ica_summary_df <- data.frame("N.peaks"=sapply(ica_result$peaks, function(x) length(x)), # Number of peaks for each IC
+                             "percent.var" = ica_result$percent_var)                   # Percent variance explained
+
+threshold <- 0.05
+
+# change condition to something more general
+if(!is.null(ica_result$geno_pvals)){
+    sig <- rep(0,nrow(A_mx))
+    sig_geno <- rep(0,nrow(A_mx))
+    
+    geno_sig_idx <- which(ica_result$geno_pvals < (threshold / length(ica_result$geno_pvals)), arr.ind = TRUE)
+    if(length(geno_sig_idx) != 0){
+      
+       geno_ics <- unique(geno_sig_idx)[,2]
+       
+       for( c in 1:length(geno_ics)){
+          ic.index <- geno_ics[c]
+          sig_geno[ic.index] <- which.min(ica_result$geno_pvals[,ic.index])
+          sig[ic.index] <- 1
+       }
+       ica_summary_df$geno_cor <- sig
+       ica_summary_df$geno_cor_idx <- sig_geno
+    }
+}
+
+# change condition to something more general
+if(!is.null(ica_result$covar_pvals)){
+    covar_sig_idx <- which(ica_result$covar_pvals < (threshold / (length(ica_result$covar_pvals))), arr.ind = T)
+    
+    sig <- rep(0,nrow(A_mx))
+    sig_covars <- rep(0,nrow(A_mx))
+    
+    if(length(covar_sig_idx) != 0 ){
+      message(nrow(covar_sig_idx ), " associations detected")
+      correlated.ic <- unique(covar_sig_idx [,1])
+      
+      for( c in 1:length(correlated.ic)){
+        ic.index <- correlated.ic[c]
+        sig_covars[ic.index] <- which.min(ica_result$covar_pvals[ic.index,])
+        sig[ic.index] <- 1
+      }
+    } else {
+      message("No ICs were correlated with covariates")
+      
+    }
+    ica_summary_df$covar_cor <- sig
+    ica_summary_df$covar_cor_idx <- sig_covars
+}
+
+ica_summary_df <- ica_summary_df[with(ica_summary_df, order(geno_cor, covar_cor,percent.var, decreasing = TRUE)),]
+
+ica_summary_df$idx <- 1:nrow(ica_summary_df)
+
+
+# create axis tick positions for chromosomes if gene info is supplied
+# the same axis tick positions are used for every plot so it only needs to be calculated once
+x.axis <- chr_axis_creator(ica_result$gene_info)
+
+
+
+```
+
+### Individual Component Information
+
+```{r Individual_IC_Plots, echo = FALSE,comment="",warning=FALSE,fig.width = 10,fig.height = 6}
+
+for( p in 1:dim(ica_result$A)[1]){
+    ###################### Plotting without Gene information ########################## 
+    # check if there is a specified order for the ICs (default is by explained variance)
+    if(!is.null(ica_result$order)){
+        i <- ica_result$order[p]
+    } else {
+        i <- p
+    }
+    
+    # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
+    mclust.obj <- suppressMessages(mclust::Mclust(ica_result$A[i,], modelNames = "V"))
+    
+    summary_plots <- list()
+    summary_plots[[1]] <- plot_ic_chr(ica_result = ica_result,
+                              ic_idx = p,
+                              x.axis = x.axis,
+                              plot.title = paste(prefix,"_IC#_",i,sep =""))
+    suppressMessages(multiplot(plotlist = summary_plots, cols = length(summary_plots)))
+    
+}
+
+```
+
+```{r, eval = FALSE, echo = FALSE}
+      # Plot IC loading with peaks labeled in red (If peaks are available)
+ 
+
+        # Gene weight histogram plot (Investigating the non-normality of the component )
+        #mclust.plots[[4]] <- plot_component_hist(ica.result$S[,i],"Gene Weight Histogram") 
+       
+        # create a data frame for plotting
+        if(!is.null(colnames(ica.result$A)) & !is.null(info.df)){
+          
+            # Dataframe that will go into ggplot for plotting with IC coefficients in IC and idx as sample index
+            coeff.plot.df <- data.frame(as.data.frame(info.df[colnames(ica.result$A),]),
+                                        "IC" = ica.result$A[i,],
+                                        "idx"= c(1:dim(ica.result$A)[2]))
+            
+            # Setting the colnames to covariate names
+            colnames(coeff.plot.df)[1:dim(as.data.frame(info.df[colnames(ica.result$A),]))[2]] <- colnames(info.df) 
+            } else if (is.null(info.df)) {
+              
+            # If there is no sample information available
+            coeff.plot.df <- data.frame("IC" = ica.result$A[i,],"idx"=c(1:dim(ica.result$A)[2]))
+        
+            } else {
+              
+            coeff.plot.df <- data.frame(as.data.frame(info.df),"IC" = ica.result$A[i,],"idx"=c(1:dim(ica.result$A)[2]))
+        
+        }
+        
+       # If IC is correlated to a covariate color the pot accordingly
+        if(i %in% unique(ica.result$cov.corr.idx$IC)){
+          
+        # color the graph by the covariate with the most significant association
+        color.by <- names(which.min(ica.result$cov.pval.mx[i, as.character(ica.result$cov.corr.idx$Covariate.Name[which(ica.result$cov.corr.idx$IC == i)])]))
+        mclust.plots[[2]] <- plot_coeff_w_legend(coeff.plot.df, k.col = color.by) + 
+        #                                    plot.title = paste("Covariate = ",color.by,sep="")) + 
+                                                theme(legend.position ="none")
+        
+        # Extra if statement for covariates that are not a factor (cannot produce a boxplot with individual groups)
+        # Need to figure out which plot might be most effective
+        
+            if(class(info.df[,color.by]) == "factor"){
+              number.of.levels <- length(levels(ica.result$info.df[,color.by]))
+                
+              mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                          aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                          geom_boxplot() + 
+                                          xlab(paste("Covariate = ",color.by,sep="")) + 
+                                          ylab("") +  
+                                          theme(axis.ticks = element_blank(), 
+                                                axis.text.x = element_blank())
+
+              if(number.of.levels > 10){
+                mclust.plots[[3]] <- mclust.plots[[3]] + theme(legend.position = "none")
+              }
+            
+            } else{
+                  mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                              aes_string(x = color.by, y = "IC", color = color.by)) + 
+                                              geom_point() + 
+                                              xlab(paste("Covariate = ",color.by,sep=""))  + 
+                                              ylab(" ") +
+                                              theme(axis.ticks = element_blank(), 
+                                                    axis.text.x = element_blank())
+            }
+            
+
+
+          } else {
+          
+            # If IC is not correlated to covariate color it using the clustering information obtained from mclust
+        
+            coeff.plot.df$mclust <- factor(mclust.obj$classification)
+            
+            mclust.plots[[2]] <- ggplot(coeff.plot.df, aes(x= idx, y = IC, color = mclust)) + 
+                                        geom_point(size = 3, pch = 20) + 
+                                        xlab("Sample idx") + ylab("IC coefficient") + 
+                                        theme(legend.position = "none")
+            
+            mclust.plots[[3]] <- ggplot(coeff.plot.df, 
+                                        aes(x = mclust, y = IC, color = mclust)) + 
+                                        geom_boxplot() + 
+                                        xlab(paste(mclust.obj$G,"clusters detected")) + 
+                                        ylab(" ") +  
+                                        theme(axis.ticks = element_blank(), 
+                                              axis.text.x = element_blank())
+            
+            if(mclust.obj$G == 1){
+                    mclust.plots[[2]] <- mclust.plots[[2]]
+                    mclust.plots[[3]] <- mclust.plots[[3]]  + 
+                                         xlab("No clusters detected") + 
+                                         theme(legend.position = "none")
+            }
+      
+        } 
+      
+       
+      
+        layout <- matrix(c(1,1,1,1,
+                           2,2,3,3), byrow = T,ncol = 4)
+      
+        
+        for( k in 1:length(mclust.plots)){
+            mclust.plots[[k]] <- ggplot_add_theme(mclust.plots[[k]])
+          
+        }
+        
+        cat("--------------------------------------------------------------------------------------------------------------","\n")
+        if (i %in% unique(ica.result$cov.corr.idx$IC)){
+            #cat("IC # ",i," Correlation with covariate ", color.by,
+            #    "/ P-value = ",ica.result$cov.pval.mx[i,color.by],"/ Variance (%) = ",ica.result$percent.var[i],"\n")
+            ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+                                  "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
+                                  "Correlated_Covariate" = color.by, 
+                                  "p-value" = ica.result$cov.pval.mx[i,color.by], 
+                                  "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
+            print(ic.info)
+            cat("---- Top 10 Gene Weights ---- \n")
+            gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
+            print(gene.table)
+            rm(ic.info, gene.table)
+            #cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            #cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ",sep ="  "), "\n")
+        } else {
+            #cat("IC # ",i," No correlation with covariates / Variance (%) = ",ica.result$percent.var[i],"\n")
+            ic.info <- data.frame(row.names = paste("IC",i,sep = ""), 
+                                  "Variance_Percent" = ica.result$ica.stat.df[i,"percent.var"],
+                                  "Correlated_Covariate" = "none", 
+                                  "p-value" = NA, 
+                                  "Number_of_Peaks" = ica.result$ica.stat.df[i,"N.peaks"])
+            print(ic.info)
+            cat("---- Top 10 Gene Weights ---- \n")
+            gene.table <- t(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T)[1:10],i, drop = FALSE],digits = 2))
+            print(gene.table)
+            rm(ic.info, gene.table)
+            #knitr::kable(gene.table, digits = 2, caption = "A table produced by printr.")
+            #cat(paste(names(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i])[1:10],"  ", sep ="  "), "\n")
+            #cat(paste(round(ica.result$S[order(abs(ica.result$S[,i]), decreasing = T),i][1:10],digits = 3),"  ", sep ="  "), "\n")
+        }
+        cat("--------------------------------------------------------------------------------------------------------------","\n")
+        #mclust.plots[[4]] <- NULL
+        suppressMessages(multiplot(plotlist = mclust.plots, layout = layout))
+
+```

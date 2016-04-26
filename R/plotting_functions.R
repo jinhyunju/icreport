@@ -260,9 +260,6 @@ plot_component_chr <- function(s,
 #'
 #' @export
 chr_axis_creator <- function(geneinfo.df){
-  if(is.null(geneinfo.df$idx)){
-    stop("index is missing in the geneinfo dataframe. Please assign indexes first")
-  }
   pheno_chr <- NULL # to get rid of R CMD check NOTES
   chromosomes <- unique(geneinfo.df$pheno_chr)
   x.axis <- matrix(0, nrow = 3, ncol = length(chromosomes))
@@ -278,9 +275,52 @@ chr_axis_creator <- function(geneinfo.df){
       x.axis[2,k] <- max(subset(geneinfo.df, pheno_chr == j)[,"idx"])
     }
 
-
   }
 
   x.axis[3,] <- (x.axis[1,] + x.axis[2,]) / 2
   return (x.axis)
+}
+
+
+#' @export
+plot_ic_chr <- function(ica_result = NULL,
+                        ic_idx,
+                        x.axis,
+                        plot.title){
+
+  geneinfo.df <- ica_result$gene_info
+  geneinfo.df$loading <- ica_result$S[as.character(geneinfo.df$id),ic_idx]
+  geneinfo.df$peaks <- 1 * ( as.character(geneinfo.df$id) %in% names(ica_result$peaks[[ic_idx]]) )
+
+  plot.title <- paste(plot.title,"_",sum(geneinfo.df$peaks),"peaks", sep = " ")
+
+  rect_left <- x.axis[1,]
+  rect_right <- x.axis[2,]
+
+  rects1 <- data.frame(
+    xstart = rect_left,
+    xend = rect_right,
+    idx = rep(0),
+    loading = rep(0),
+    fill.col = factor(rep(c(0,1), length.out = length(rect_left)))
+  )
+
+
+  p <- ggplot(geneinfo.df, aes_string(x = "idx", y = "loading")) +
+    geom_rect(data = rects1, aes_string(xmin = "xstart",
+                                        xmax = "xend",
+                                        ymin = "-Inf",
+                                        ymax = "Inf",
+                                        fill = "fill.col"), alpha = 0.35) +
+    geom_linerange(aes(ymin = 0, ymax = loading, colour = factor(peaks))) +
+    theme_bw() +
+    #geom_vline(xintercept=c(0,x.axis[2,]), linetype="dotted") +
+    scale_x_continuous("Gene Chromosome Location",breaks=x.axis[3,],labels=unique(geneinfo.df$pheno_chr))+
+    scale_y_continuous(expand = c(0, 0)) + labs(title = plot.title) +
+    scale_color_manual(values=c("grey", "red")) +
+    scale_fill_manual(values=c("skyblue", NA)) +
+    ylab("Gene Weights") +
+    theme(legend.position="none")
+
+  return(p)
 }

@@ -3,7 +3,8 @@
 \alias{ica_covar_check}
 \title{Custom ICA function for analyzing gene expression data.}
 \usage{
-ica_covar_check(ica_list = NULL, h5_file = NULL, covars = NULL)
+ica_covar_check(ica_list = NULL, h5_file = NULL, covars = NULL,
+  cor.threshold = 0.05)
 }
 \arguments{
 \item{h5_file}{Name of HDF5 file that has the phenotype values saved.}
