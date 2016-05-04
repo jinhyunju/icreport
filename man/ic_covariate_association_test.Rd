@@ -6,7 +6,7 @@
 ic_covariate_association_test(input.A, info.input)
 }
 \arguments{
-\item{input.A}{The mixing matrix estimated through ICA}
+\item{input.A}{A matrix of an ica_result list}
 
 \item{info.input}{A dataframe that holds the measured covariates for each sample}
 }

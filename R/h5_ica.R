@@ -95,7 +95,11 @@ h5_ica <- function(h5_file = NULL,
     percent.var <- (var.IC / total.var) * 100
     ica.result$percent_var <- percent.var
     message("- Sanity Check : Total % of variance explained by ",k.est," ICs = ", sum(percent.var), "\n")
+
+    class(ica.result) <- "ICAobject"
     attr(ica.result, 'method') <- "ica"
+    attr(ica.result, 'covar_cor') <- "no"
+    attr(ica.result, 'geno_cor') <- "no"
     return(ica.result)
 }
 
@@ -141,8 +145,10 @@ ica_covar_check <- function(ica_list = NULL,
     message("- Checking associations between ICs and covariates \n")
     # Anova analysis for covariates vs ICA weights (A matrix)
     cov.pval.mx <- ic_covariate_association_test(A_mx,covars)
+    ica_list$covar_pvals <- cov.pval.mx
+    attr(ica_list, 'covar_cor') <- "yes"
 
-    return(cov.pval.mx)
+    return(ica_list)
 }
 
 
@@ -152,7 +158,7 @@ ica_covar_check <- function(ica_list = NULL,
 #' with a dataframe of measured covariates to test the association
 #' between them.
 #'
-#' @param input.A The mixing matrix estimated through ICA
+#' @param input.A A matrix of an ica_result list
 #' @param info.input A dataframe that holds the measured covariates for each sample
 #' @return output A matrix holding the p-values for each indepenedent component and covariate pair.
 #' @keywords keywords
@@ -179,17 +185,18 @@ ic_covariate_association_test <- function(input.A, info.input){
       pval.mx[i,j] <- p.val
     }
   }
+
   return(pval.mx)
 }
 
 #' @import lrgpr
 #' @import formula.tools
 #' @export
-ica_genotype_association <- function(ica.result,
+ica_genotype_association <- function(ica_list = NULL,
                                      h5_file = NULL,
                                      genotype.mx = NULL,
                                      n.cores = 1){
-  if(is.null(ica.result)){
+  if(is.null(ica_list)){
       stop("ICA input missing")
   }
 
@@ -200,32 +207,31 @@ ica_genotype_association <- function(ica.result,
     stop("Missing input for genotypes, please specify genotype object or h5 file")
   }
 
-  ica.loadings <- t(ica.result$A)
+  ica.loadings <- t(ica_list$A)
 
-  ic.vs.geno <- glmApply(ica.loadings ~ SNP,
+  ic.vs.geno <- lrgpr::glmApply(ica.loadings ~ SNP,
                          features = genotype.mx,
                          nthreads = n.cores)$pValues
 
-  colnames(ic.vs.geno) <- rownames(ica.result$A)
+  colnames(ic.vs.geno) <- rownames(ica_list$A)
   #sig <- which(ic.vs.geno < (0.05/length(ic.vs.geno) ), arr.ind = TRUE)
 
   #genetic.factors <- colnames(ic.vs.geno)[unique(sig[,"col"])]
   #non.genetic <- colnames(ic.vs.geno)[which(!(colnames(ic.vs.geno) %in% genetic.factors))]
-
-  return(ic.vs.geno)
+  ica_list$geno_pvals <- ic.vs.geno
+  attr(ica_list, 'geno_cor') <- "yes"
+  return(ica_list)
 }
 
 #' @export
-get_gene_info <- function(h5_file){
-  gene_id <- h5read(h5_file, "phenotypes/col_info/id")
-  gene_chr <- h5read(h5_file, "phenotypes/col_info/pheno_chr")
-  gene_start <- h5read(h5_file, "phenotypes/col_info/pheno_start")
-  gene_info_df <- data.frame("id" = gene_id,
-                             "pheno_chr" = gene_chr,
-                             "pheno_start" = gene_start,
-                             "idx" = 1:length(gene_id),
-                             stringsAsFactors = FALSE)
-  return(gene_info_df)
+get_gene_info <- function(ica_list, h5_file){
+#  gene_id <- h5read(h5_file, "phenotypes/col_info/id")
+#  gene_chr <- h5read(h5_file, "phenotypes/col_info/pheno_chr")
+#  gene_start <- h5read(h5_file, "phenotypes/col_info/pheno_start")
+  gene_info_df <- as.data.frame(h5read(h5_file, "phenotypes/col_info"), stringsAsFactors = FALSE)
+  gene_info_df$idx <- 1:nrow(gene_info_df)
+  ica_list$gene_info <- gene_info_df
+  return(ica_list)
 }
 
 #' @export
