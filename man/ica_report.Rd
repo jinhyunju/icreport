@@ -3,8 +3,8 @@
 \alias{ica_report}
 \title{Generating ICA or PCA summary reports.}
 \usage{
-ica_report(ica_result = NULL, n.comps = NULL, prefix = NULL,
-  output.path = NULL, file.ext = "png")
+ica_report(ica_result = NULL, h5_file = NULL, n.comps = NULL,
+  prefix = NULL, output.path = NULL, file.ext = "png")
 }
 \arguments{
 \item{ica_result}{ICA or PCA result list created by either \code{gene_expr_ica()} or \code{gene_expr_pca()}.}
