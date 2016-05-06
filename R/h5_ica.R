@@ -195,6 +195,7 @@ ic_covariate_association_test <- function(input.A, info.input){
 ica_genotype_association <- function(ica_list = NULL,
                                      h5_file = NULL,
                                      genotype.mx = NULL,
+                                     sig_threshold = 0.05,
                                      n.cores = 1){
   if(is.null(ica_list)){
       stop("ICA input missing")
@@ -219,6 +220,8 @@ ica_genotype_association <- function(ica_list = NULL,
   #genetic.factors <- colnames(ic.vs.geno)[unique(sig[,"col"])]
   #non.genetic <- colnames(ic.vs.geno)[which(!(colnames(ic.vs.geno) %in% genetic.factors))]
   ica_list$geno_pvals <- ic.vs.geno
+  ica_list$geno_cor_count <- apply(ic.vs.genos, 2, function(x) sum(na.omit(x < (sig_threshold / length(ic.vs.geno)))))
+  ica_list$non_genetic <- names(ica_list$geno_cor_count[which(ica_list$geno_cor_count < 1)])
   attr(ica_list, 'geno_cor') <- "yes"
   return(ica_list)
 }

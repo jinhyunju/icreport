@@ -58,7 +58,7 @@ ica_report <- function(ica_result = NULL,
       sig <- rep(0,nrow(A_mx))
       sig_geno <- rep(0,nrow(A_mx))
 
-      ica_summary_df$geno_cor <- apply(ica_result$geno_pvals, 2, function(x) sum(na.omit(x < (threshold / length(ica_result$geno_pvals)))))
+      ica_summary_df$geno_cor <- ica_result$geno_cor_count
       ica_summary_df$geno_cor_max <- apply(ica_result$geno_pvals, 2, function(x) which.min(x))
     }
 
