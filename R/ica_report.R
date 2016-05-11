@@ -54,6 +54,9 @@ ica_report <- function(ica_result = NULL,
 
     geno_mx <- load_h5_data(h5_file, "genotypes")
     # change condition to something more general
+
+    ica_summary_df$geno_cor <- rep(0, nrow(ica_summary_df))
+
     if(attr(ica_result, "geno_cor") == "yes"){
       sig <- rep(0,nrow(A_mx))
       sig_geno <- rep(0,nrow(A_mx))
