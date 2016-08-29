@@ -13,6 +13,7 @@ If you already know what you want to use the package for, follow this simple exa
 
 1) The package is not yet published on bioconductor or CRAN, so the best way to install the package is directly from github. Installing the package through the function ```install_github``` from the package ```devtools```.
 
+
 ```r
 install.packages("devtools") # in case you don't have devtools already
 
