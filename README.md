@@ -13,7 +13,7 @@ If you already know what you want to use the package for, follow this simple exa
 
 1) The package is not yet published on bioconductor or CRAN, so the best way to install the package is directly from github. Installing the package through the function ```install_github``` from the package ```devtools```.
 
-```{r Install icreport, eval = FALSE}
+```r
 install.packages("devtools") # in case you don't have devtools already
 
 devtools::install_github("jinhyunju/icreport") #installing icreport
@@ -32,13 +32,13 @@ devtools::install_github("jinhyunju/icreport") #installing icreport
 
 - Please be aware that the script will install two packages ```GEOquery``` and ```biomaRt``` if you don't already have it on your machine. 
 
-```{r Install datasets, message = FALSE, warning=FALSE, cache = TRUE}
+```r
 example.data.script <- system.file("templates/create_example_data.R", package="icreport")
 
 source(example.data.script)
 ```
 
-```{r setseed, echo = FALSE}
+```r
 set.seed(7777777)
 setwd("~/Dropbox/ICA_organized_workspace/")
 ```
@@ -71,7 +71,7 @@ setwd("~/Dropbox/ICA_organized_workspace/")
 
 2-2) In case you have covariates:
 
-```{r ICA w covars, message = FALSE, warning=FALSE}
+```r
 library(icreport)
 ica_result <- gene_expr_ica(phenotype.mx = expr.data, 
                             info.df = sample.info,
@@ -82,7 +82,7 @@ ica_result <- gene_expr_ica(phenotype.mx = expr.data,
 
 2-3) In case you don't have any covariates:
 
-```{r ICA wo covars, eval = FALSE}
+```r
 library(icreport)
 ica_result <- gene_expr_ica(phenotype.mx = expr)
 
@@ -96,7 +96,7 @@ ica_result <- gene_expr_ica(phenotype.mx = expr)
 
 - geneinfo.df should be a dataframe that contains information about gene (or probe) positions. The column names should be "phenotype" for the genes or probes (rownames of expr.data), "pheno_chr" for chromosomes, "pheno_start" for starting coordinates and "pheno_end" for end coordinates. See example below for more details. 
 
-```{r geneinfo example, comment = NA}
+```r
 
 head(probe.info)
 
@@ -104,7 +104,7 @@ head(probe.info)
 
 - You can specify the output directory by including the option output.path = "/path/to/directory". Please note that sometimes directories starting with the short cut for home "~" are not recognized, so I recommend setting the working directory to the desired output directory first or specifying the full path. 
 
-```{r ICA report, eval = FALSE, message = FALSE, warning=FALSE}
+```r
 report2me(input = ica_result, 
           prefix = "Test_ICA_Report",
           geneinfo.df = probe.info)
@@ -116,7 +116,7 @@ The PCA functionality of the package runs ```prcomp()``` on the dataset, and als
 
 3-1) In case you have covariates:
 
-```{r PCA w covars, eval = TRUE, message = FALSE, warning=FALSE}
+```r
 
 pca_result <- gene_expr_pca(phenotype.mx = expr.data, 
                             info.df = sample.info,
@@ -126,7 +126,7 @@ pca_result <- gene_expr_pca(phenotype.mx = expr.data,
 
 3-2) In case you don't have any covariates:
 
-```{r PCA wo covars, eval = FALSE}
+```r
 
 pca_result <- gene_expr_pca(phenotype.mx = expr.data)
 
@@ -140,13 +140,13 @@ pca_result <- gene_expr_pca(phenotype.mx = expr.data)
 
 - prefix specifies the name of the html report file. 
 
-```{r PCA report, eval = FALSE, message = FALSE, warning=FALSE}
+```r
 report2me(input = pca_result, 
           prefix = "Test_PCA_Report",
           geneinfo.df = probe.info)
 ```
 
-```{r h5 version, eval = FALSE, message = FALSE, warning=FALSE}
+```r
 
 library(icreport)
 h5file <- "testinput.h5"
