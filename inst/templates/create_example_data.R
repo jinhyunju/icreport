@@ -20,7 +20,7 @@ gse60028 <- GEOquery::getGEO(GEO = "GSE60028")  # get the GEO data
 geo.eset <- gse60028$GSE60028_series_matrix.txt.gz # extract the expression set
 
 
-expr.data <<- exprs(geo.eset)       # extract the expression matrix
+expr.data <- exprs(geo.eset)       # extract the expression matrix
 covariate.data <- pData(geo.eset)   # extract sample information
 feature.df <- fData(geo.eset)       # extract probe information
 feature.df <- feature.df[,c("ID", "ENTREZ_GENE_ID")]
@@ -31,7 +31,10 @@ covariate.data <- covariate.data[,c("characteristics_ch1", "characteristics_ch1.
 
 
 # load biomart database
-mart.ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+# mart.ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+mart.ensembl <- useMart(biomart="ENSEMBL_MART_ENSEMBL",
+                        dataset="hsapiens_gene_ensembl",
+                        host = "www.ensembl.org")
 
 biomart.output <- getBM(attributes=c('entrezgene','hgnc_symbol',
                              'gene_biotype',#'status',
@@ -49,7 +52,8 @@ colnames(probe.info)[5:7] <- c("pheno_chr","pheno_start", "pheno_end")
 colnames(probe.info)[2] <- c("phenotype")
 
 probe.info <- probe.info[,c("phenotype", "pheno_chr", "pheno_start", "pheno_end")]
-
+probe.info$pheno_chr <- factor(probe.info$pheno_chr, levels = gtools::mixedsort(unique(probe.info$pheno_chr)))
+probe.info <- probe.info[order(probe.info$pheno_chr, decreasing = FALSE),]
 # filter expression data down to probes with information
 expr.data <- expr.data[as.character(probe.info$phenotype),]
 

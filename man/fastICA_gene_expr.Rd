@@ -4,7 +4,7 @@
 \title{ICA analysis based on the package fastICA}
 \usage{
 fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
-  scale.pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE,
+  scale_pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE,
   w.init = NULL)
 }
 \arguments{
@@ -16,7 +16,7 @@ fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
 
 \item{alpha}{alpha for ICA, should be in range [1,2].}
 
-\item{scale.pheno}{Logical value specifying the scaling of rows of X.}
+\item{scale_pheno}{Logical value specifying the scaling of rows of X.}
 
 \item{maxit}{Maximum iterations}
 

@@ -8,7 +8,7 @@ Description: icreport is a package for exploratory data analysis for gene
     with simple code and comprehensive summary reports can be generated.
 Depends:
     R (>= 3.0.0)
-License: GPL-3
+License: GPL-2
 LazyData: true
 Imports:
     MASS,

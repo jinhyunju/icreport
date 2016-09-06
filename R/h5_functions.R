@@ -233,3 +233,100 @@ load_h5_data <- function(input_file = NULL, data_type = c("phenotypes","genotype
 
 }
 
+
+#' Custom ICA function for analyzing gene expression data.
+#'
+#' Performing ICA on a dataset and create a list object with results.
+#' @param h5_file Name of HDF5 file that has the phenotype values saved.
+#' @param input_pheno Phenotype matrix with diemnsions N x g
+#' @param k.est Number of components to be estimated or method to estimate it.
+#' @param scale.pheno Logical value specifying the scaling of row of the phenotype.mx.
+#' @return List with the following entries.
+#' @keywords keywords
+#'
+#' @import mclust
+#' @export
+ica_covar_check <- function(ica_list = NULL,
+                            h5_file = NULL,
+                            covars = NULL, 
+                            cor.threshold = 0.05){
+
+    if(is.null(covars) & !is.null(h5_file)){
+      message("Loading covariates from HDF5 file \n")
+      covars <- load_h5_data(h5_file, "covars")
+    }
+
+    A_mx <- ica_list$A
+
+    message("Checking dimensions and column/row names \n")
+
+    if(nrow(covars) == ncol(A_mx)){
+      message("[Good] Number of samples in <covars> and <ica_list> match \n")
+    } else {
+      stop("Error: Sample numbers in <covars> and <ica_list> don't match. Stopping script")
+    }
+
+    matching.names <- sum(rownames(covars) %in% colnames(A_mx))
+
+    if(matching.names == nrow(covars)){
+      message("[Good] All samples in <ica_list> are accounted for in <covars> \n")
+    } else {
+      stop("Missing sample Information: Check sample names in <covars> and <ica_list>")
+    }
+
+    message("- Checking associations between ICs and covariates \n")
+    # Anova analysis for covariates vs ICA weights (A matrix)
+    cov.pval.mx <- ic_covariate_association_test(A_mx,covars)
+    ica_list$covar_pvals <- cov.pval.mx
+    attr(ica_list, 'covar_cor') <- "yes"
+
+    return(ica_list)
+}
+
+#' @import lrgpr
+#' @import formula.tools
+#' @export
+ica_genotype_association <- function(ica_list = NULL,
+                                     h5_file = NULL,
+                                     genotype.mx = NULL,
+                                     sig_threshold = 0.05,
+                                     n.cores = 1){
+  if(is.null(ica_list)){
+      stop("ICA input missing")
+  }
+
+  if(is.null(genotype.mx) & !is.null(h5_file)){
+    message("Loading genotypes from HDF5 file \n")
+    genotype.mx <- load_h5_data(h5_file, "genotypes")
+  } else if (is.null(genotype.mx) & is.null(h5_file)){
+    stop("Missing input for genotypes, please specify genotype object or h5 file")
+  }
+
+  ica.loadings <- t(ica_list$A)
+
+  ic.vs.geno <- lrgpr::glmApply(ica.loadings ~ SNP,
+                         features = genotype.mx,
+                         nthreads = n.cores)$pValues
+
+  colnames(ic.vs.geno) <- rownames(ica_list$A)
+  #sig <- which(ic.vs.geno < (0.05/length(ic.vs.geno) ), arr.ind = TRUE)
+
+  #genetic.factors <- colnames(ic.vs.geno)[unique(sig[,"col"])]
+  #non.genetic <- colnames(ic.vs.geno)[which(!(colnames(ic.vs.geno) %in% genetic.factors))]
+  ica_list$geno_pvals <- ic.vs.geno
+  ica_list$geno_cor_count <- apply(ic.vs.geno, 2, function(x) sum(na.omit(x < (sig_threshold / length(ic.vs.geno)))))
+  ica_list$non_genetic <- names(ica_list$geno_cor_count[which(ica_list$geno_cor_count < 1)])
+  attr(ica_list, 'geno_cor') <- "yes"
+  return(ica_list)
+}
+
+#' @export
+get_gene_info <- function(ica_list, h5_file){
+#  gene_id <- h5read(h5_file, "phenotypes/col_info/id")
+#  gene_chr <- h5read(h5_file, "phenotypes/col_info/pheno_chr")
+#  gene_start <- h5read(h5_file, "phenotypes/col_info/pheno_start")
+  gene_info_df <- as.data.frame(h5read(h5_file, "phenotypes/col_info"), stringsAsFactors = FALSE)
+  gene_info_df$idx <- 1:nrow(gene_info_df)
+  ica_list$gene_info <- gene_info_df
+  return(ica_list)
+}

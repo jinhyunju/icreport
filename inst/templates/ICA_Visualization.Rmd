@@ -30,13 +30,7 @@ for( i in 1:dim(ica_result$A)[1]){
     # Running Mclust on IC coefficient to estimate ideal number of clusters in 1D IC coefficient space 
     mclust.obj <- suppressMessages(mclust::Mclust(ica_result$A[p,], modelNames = "V"))
     
-    coeff.plot.df <- data.frame("IC" = ica_result$A[p,],"idx"=c(1:dim(ica_result$A)[2]))
-    
-    if(ica_summary_df[i,"geno_cor"] > 0 ){
-        coeff.plot.df$color_geno <- factor(geno_mx[,ica_summary_df$geno_cor_max[i]])
-    } else {
-        coeff.plot.df$color_geno <- 0
-    }
+
     component_plots <- list()
     component_plots[[1]] <- plot_ic_chr(ica_result = ica_result,
                               ic_idx = p,
