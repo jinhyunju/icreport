@@ -71,7 +71,7 @@ h5_ica <- function(h5_file = NULL,
 
     ica.result <- fastICA_gene_expr(phenotype.mx, k.est,
                                     fun = "logcosh",                            # function that should be used to estimate ICs, default is logcosh
-                                    alpha = 1, scale.pheno = FALSE,                  # row.norm is set to false since the phenotype.mx is scaled separately
+                                    alpha = 1,           # row.norm is set to false since the phenotype.mx is scaled separately
                                     maxit=500, tol = 0.0001, verbose = FALSE)
 
     rownames(ica.result$S) <- rownames(phenotype.mx)                   # Setting appropriate names for signals and mixing matrix

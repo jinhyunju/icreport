@@ -6,7 +6,6 @@
 #' @param n.comp Number of components to be estimated or method to estimate it.
 #' @param fun Function to be used in ICA estimation
 #' @param alpha alpha for ICA, should be in range [1,2].
-#' @param scale_pheno Logical value specifying the scaling of rows of X.
 #' @param maxit Maximum iterations
 #' @param tol Threshold for convergence
 #' @param verbose If TRUE details of the estimation process are shown.
@@ -17,7 +16,7 @@
 #' @export
 #'
 fastICA_gene_expr <-function(X, n.comp, fun = "logcosh", alpha = 1,
-                             scale_pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE, w.init=NULL) {
+                             maxit = 200, tol = 1e-04, verbose = TRUE, w.init=NULL) {
     dd <- dim(X)       # dimensions g x N
     d <- dd[dd != 1L]
     if (length(d) != 2L)
