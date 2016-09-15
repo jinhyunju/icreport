@@ -3,7 +3,7 @@
 \alias{pre_process_data}
 \title{Pre-processing of the data}
 \usage{
-pre_process_data(input_matrix, scale_pheno)
+pre_process_data(input_matrix, scale.pheno)
 }
 \arguments{
 \item{input_matrix}{Input matrix with a dimension of g X N  \code{input_matrix}}
