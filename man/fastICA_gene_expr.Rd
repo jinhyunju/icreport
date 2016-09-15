@@ -3,9 +3,8 @@
 \alias{fastICA_gene_expr}
 \title{ICA analysis based on the package fastICA}
 \usage{
-fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
-  scale_pheno = FALSE, maxit = 200, tol = 1e-04, verbose = TRUE,
-  w.init = NULL)
+fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1, maxit = 200,
+  tol = 1e-04, verbose = TRUE, w.init = NULL)
 }
 \arguments{
 \item{X}{Phenotype matrix with diemnsions g x N}
@@ -15,8 +14,6 @@ fastICA_gene_expr(X, n.comp, fun = "logcosh", alpha = 1,
 \item{fun}{Function to be used in ICA estimation}
 
 \item{alpha}{alpha for ICA, should be in range [1,2].}
-
-\item{scale_pheno}{Logical value specifying the scaling of rows of X.}
 
 \item{maxit}{Maximum iterations}
 
