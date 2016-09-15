@@ -18,7 +18,7 @@
 #' apply(centered.scaled, 1, mean)
 #' apply(centered.scaled, 1, sd)
 #' @export
-pre_process_data <- function(input_matrix, scale_pheno){
+pre_process_data <- function(input_matrix, scale.pheno){
     var.vec <- apply(input_matrix, 1, var)
     var0.count <- sum(var.vec == 0)
 
@@ -31,7 +31,7 @@ pre_process_data <- function(input_matrix, scale_pheno){
     }
 
 
-    if(scale_pheno == TRUE){
+    if(scale.pheno == TRUE){
         message("- Centering and Scaling Input Matrix \n")
         # scale Input matrix to have 0 mean and 1 sd
         input_matrix <- t(apply(input_matrix, 1, function(x) (x - mean(x))/sd(x)))

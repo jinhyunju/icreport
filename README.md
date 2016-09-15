@@ -101,6 +101,7 @@ report2me(input = pca_result,
 ### Updated functions
 
 * To do 
+
 - [ ] Fix documentation
 
 Restructuring old functions to make the functionalities more modular. 
